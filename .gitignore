@@ -1,0 +1,5 @@
+Manifest.toml
+*.png
+*.pdf
+*.jld2
+.DS_Store

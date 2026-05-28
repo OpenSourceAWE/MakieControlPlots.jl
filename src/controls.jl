@@ -130,7 +130,9 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     on(events(fig).mouseposition) do _
         for ax in axes_list
             Makie.is_mouseinside(ax.scene) || continue
-            x, y = Makie.mouseposition(ax.scene)
+            mpos = Makie.mouseposition(ax.scene)
+            inv_tf = Makie.inverse_transform(ax.scene.transform_func[])
+            x, y = Makie.apply_transform(inv_tf, mpos)
             cursor[] = @sprintf("x=%.4g  y=%.4g", x, y)
             crosshair_pt[] = Point2f(x, y)
             hovered_axis[] = ax

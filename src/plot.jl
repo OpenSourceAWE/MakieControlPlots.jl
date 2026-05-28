@@ -1,13 +1,13 @@
-function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", fig="",
-              ysize=14, disp=true)
+function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
+              fig="", ysize=14, disp=true)
     X = 1:length(Y)
-    return plot(X, Y; xlabel, ylabel, fig, ysize, disp)
+    return plot(X, Y; xlabel, ylabel, title, fig, ysize, disp)
 end
 
-function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="",
+function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=14, disp=true)
-    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, ysize, nothing,
+    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ysize, nothing,
                          xlims, ylims, ann, scatter, fig, 1)
     if disp
         builder = function(layout)
@@ -24,6 +24,10 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="",
             if !isnothing(ann)
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
             end
+            if title != ""
+                Label(layout[0, 1], string(title); fontsize=14,
+                      tellwidth=false)
+            end
             return (; axes=[ax])
         end
         _show_interactive(builder; fig_name=fig)
@@ -32,10 +36,10 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="",
 end
 
 function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
-              xlabel="", ylabel="", labels=nothing, xlims=nothing,
+              xlabel="", ylabel="", title="", labels=nothing, xlims=nothing,
               ylims=nothing, ann=nothing, scatter=false, fig="",
               ysize=14, disp=true)
-    plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, ysize, nothing,
+    plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ysize, nothing,
                          xlims, ylims, ann, scatter, fig, 4)
     if disp
         builder = function(layout)
@@ -81,6 +85,10 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
             end
             any_label && axislegend(ax)
+            if title != ""
+                Label(layout[0, 1], string(title); fontsize=14,
+                      tellwidth=false)
+            end
             return (; axes=[ax])
         end
         _show_interactive(builder; fig_name=fig)
@@ -89,10 +97,10 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
 end
 
 function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
-              xlabel="", ylabels=["", ""], labels=["", ""], xlims=nothing,
-              ylims=nothing, ann=nothing, scatter=false, fig="",
-              ysize=14, disp=true)
-    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, ysize,
+              xlabel="", ylabels=["", ""], title="", labels=["", ""],
+              xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
+              fig="", ysize=14, disp=true)
+    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ysize,
                          nothing, xlims, ylims, ann, scatter, fig, 5)
     if disp
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
@@ -122,6 +130,10 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             Legend(layout[1, 1], [l1, l2], leg_labels;
                    tellwidth=false, tellheight=false, halign=:left,
                    valign=:top, margin=(10, 10, 10, 10))
+            if title != ""
+                Label(layout[0, 1], string(title); fontsize=14,
+                      tellwidth=false)
+            end
             return (; axes=[ax1, ax2])
         end
         _show_interactive(builder; fig_name=fig)
@@ -131,14 +143,14 @@ end
 
 function plot(X, Y1::AbstractVector{<:AbstractVector},
               Y2::AbstractVector{<:Number};
-              xlabel="", ylabels=["", ""], labels=["", ""], xlims=nothing,
-              ylims=nothing, ann=nothing, scatter=false, fig="",
-              ysize=14, disp=true)
+              xlabel="", ylabels=["", ""], title="", labels=["", ""],
+              xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
+              fig="", ysize=14, disp=true)
     if length(Y1) == 1
-        return plot(X, Y1[1], Y2; xlabel, ylabels, labels, xlims, ylims,
-                    ann, scatter, fig, ysize, disp)
+        return plot(X, Y1[1], Y2; xlabel, ylabels, title, labels, xlims,
+                    ylims, ann, scatter, fig, ysize, disp)
     end
-    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, ysize,
+    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ysize,
                          nothing, xlims, ylims, ann, scatter, fig, 5)
     if disp
         builder = function(layout)
@@ -169,6 +181,10 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             Legend(layout[1, 1], lns, leg_labels;
                    tellwidth=false, tellheight=false, halign=:left,
                    valign=:top, margin=(10, 10, 10, 10))
+            if title != ""
+                Label(layout[0, 1], string(title); fontsize=14,
+                      tellwidth=false)
+            end
             return (; axes=[ax1, ax2])
         end
         _show_interactive(builder; fig_name=fig)

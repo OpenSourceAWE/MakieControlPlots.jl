@@ -3,3 +3,4 @@ Manifest.toml
 *.pdf
 *.jld2
 .DS_Store
+.claude

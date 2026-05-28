@@ -26,6 +26,7 @@ mutable struct PlotX
     labels
     xlabel
     ylabels
+    title::String
     ysize::Int
     yzoom
     xlims
@@ -44,29 +45,31 @@ include("plot.jl")
 include("plotx.jl")
 include("plotxy.jl")
 include("plot2d.jl")
+include("precompile.jl")
 
 function Base.display(p::PlotX)
     if p.type == 1
-        plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, xlims=p.xlims,
-             ylims=p.ylims, ann=p.ann, scatter=p.scatter, fig=p.fig,
-             ysize=p.ysize, disp=true)
-    elseif p.type == 2
-        plotx(p.X, p.Y...; xlabel=p.xlabel, ylabels=p.ylabels,
-              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,
-              scatter=p.scatter, fig=p.fig, ysize=p.ysize, yzoom=p.yzoom,
-              disp=true)
-    elseif p.type == 3
-        plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, xlims=p.xlims,
-               ylims=p.ylims, ann=p.ann, scatter=p.scatter, fig=p.fig,
-               ysize=p.ysize, disp=true)
-    elseif p.type == 4
-        plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, labels=p.labels,
+        plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
              fig=p.fig, ysize=p.ysize, disp=true)
-    elseif p.type == 5
-        plot(p.X, p.Y[1], p.Y[2]; xlabel=p.xlabel, ylabels=p.ylabels,
+    elseif p.type == 2
+        plotx(p.X, p.Y...; xlabel=p.xlabel, ylabels=p.ylabels,
+              title=p.title, labels=p.labels, xlims=p.xlims, ylims=p.ylims,
+              ann=p.ann, scatter=p.scatter, fig=p.fig, ysize=p.ysize,
+              yzoom=p.yzoom, disp=true)
+    elseif p.type == 3
+        plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
+               xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
+               fig=p.fig, ysize=p.ysize, disp=true)
+    elseif p.type == 4
+        plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,
              scatter=p.scatter, fig=p.fig, ysize=p.ysize, disp=true)
+    elseif p.type == 5
+        plot(p.X, p.Y[1], p.Y[2]; xlabel=p.xlabel, ylabels=p.ylabels,
+             title=p.title, labels=p.labels, xlims=p.xlims, ylims=p.ylims,
+             ann=p.ann, scatter=p.scatter, fig=p.fig, ysize=p.ysize,
+             disp=true)
     end
     return nothing
 end

@@ -1,7 +1,7 @@
 function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
                fig="", title="", ysize=14, yzoom=1.0, disp=true)
-    plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, ysize,
+    plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ysize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2)
     if disp
         n = length(Y)

@@ -1,6 +1,7 @@
-function plotxy(X, Y; xlabel="", ylabel="", xlims=nothing, ylims=nothing,
-                ann=nothing, scatter=false, fig="", ysize=14, disp=true)
-    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, ysize, nothing,
+function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
+                ylims=nothing, ann=nothing, scatter=false, fig="",
+                ysize=14, disp=true)
+    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ysize, nothing,
                          xlims, ylims, ann, scatter, fig, 3)
     if disp
         builder = function(layout)
@@ -12,6 +13,10 @@ function plotxy(X, Y; xlabel="", ylabel="", xlims=nothing, ylims=nothing,
             isnothing(ylims) || ylims!(ax, ylims[1], ylims[2])
             if !isnothing(ann)
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
+            end
+            if title != ""
+                Label(layout[0, 1], string(title); fontsize=14,
+                      tellwidth=false)
             end
             return (; axes=[ax])
         end

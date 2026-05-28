@@ -1,0 +1,12 @@
+#!/bin/bash -eu
+
+if [[ $(basename "$(pwd)") == "bin" ]]; then
+    cd ..
+fi
+
+julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+julia --project=examples -e 'using Pkg; Pkg.develop(PackageSpec(path=".")); Pkg.instantiate(); Pkg.precompile()'
+
+echo "Installation complete!"
+echo
+echo "Run ./bin/run_julia to start Julia with the project activated."

@@ -1,33 +1,44 @@
-using REPL.TerminalMenus: RadioMenu, request
+using Pkg
+if ! ("ControlSystemsBase" ∈ keys(Pkg.project().dependencies))
+     Pkg.activate("examples")
+end
+using ControlSystemsBase
+using MakieControlPlots
+using REPL.TerminalMenus
 
-options = ["simple = include(\"simple.jl\")",
-           "basic = include(\"basic.jl\")",
-           "shifted = include(\"shifted.jl\")",
-           "latex = include(\"latex.jl\")",
-           "plotxy = include(\"plotxy.jl\")",
-           "two_in_one = include(\"two_in_one.jl\")",
-           "dual_one_axis = include(\"dual_one_axis.jl\")",
+p = nothing
+
+options = ["basic = include(\"basic.jl\")",
+           "Bode_plot = include(\"bode-plot.jl\")",
            "dual_one_axis_error_bars = include(\"dual_one_axis_error_bars.jl\")",
-           "dual_y_axis = include(\"dual_y-axis.jl\")",
+           "dual_one_axis = include(\"dual_one_axis.jl\")",
            "dual_y_axis_3 = include(\"dual_y-axis-3.jl\")",
-           "multi_channel = include(\"multi-channel.jl\")",
-           "multi_channel_dual = include(\"multi-channel-dual.jl\")",
-           "multi_channel_many = include(\"multi-channel-many.jl\")",
+           "LaTeX = include(\"latex.jl\")",
            "multi_channel_shifted = include(\"multi-channel_shifted.jl\")",
            "multi_channel_ysize = include(\"multi-channel_ysize.jl\")",
-           "plot2d = include(\"plot2d.jl\")",
+           "multi_channel_dual = include(\"multi-channel-dual.jl\")",
+           "multi_channel_many = include(\"multi-channel-many.jl\")",
+           "multi_channel = include(\"multi-channel.jl\")",
            "plot2d_seg = include(\"plot2d-seg.jl\")",
-           "bode_plot = include(\"bode-plot.jl\")",
+           "plot_2d = include(\"plot2d.jl\")",
+           "plot_xy = include(\"plotxy.jl\")",
+           "shifted = include(\"shifted.jl\")",
+           "simple = include(\"simple.jl\")",
            "quit"]
 
-function example_menu(options)
+function example_menu()
+    global p
     active = true
     while active
-        menu = RadioMenu(options, pagesize=12)
-        choice = request("\nChoose example to run or `q` to quit: ", menu)
+        menu = RadioMenu(options, pagesize=8)
+        choice = request("\nChoose function to execute or `q` to quit: ", menu)
 
         if choice != -1 && choice != length(options)
             eval(Meta.parse(options[choice]))
+            if !isnothing(p)
+                display(p)
+                p=nothing
+            end
         else
             println("Left menu. Press <ctrl><d> to quit Julia!")
             active = false
@@ -35,4 +46,4 @@ function example_menu(options)
     end
 end
 
-example_menu(options)
+example_menu()

@@ -1,18 +1,24 @@
 function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
-              fig="", ysize=14, disp=true)
+              fig="", ysize=nothing, xsize=nothing, labelsize=20,
+              output_folder="output", disp=true)
     X = 1:length(Y)
-    return plot(X, Y; xlabel, ylabel, title, fig, ysize, disp)
+    return plot(X, Y; xlabel, ylabel, title, fig, ysize, xsize, labelsize,
+                output_folder, disp)
 end
 
 function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
-              fig="", ysize=14, disp=true)
-    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ysize, nothing,
+              fig="", ysize=nothing, xsize=nothing, labelsize=20,
+              output_folder="output", disp=true)
+    ylsize = isnothing(ysize) ? labelsize : ysize
+    xlsize = isnothing(xsize) ? labelsize : xsize
+    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 1)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
-                      ylabel=string(ylabel), ylabelsize=ysize)
+                      ylabel=string(ylabel), ylabelsize=ylsize,
+                      xlabelsize=xlsize)
             lines!(ax, X, Y)
             scatter && scatter!(ax, X, Y; color=:red, markersize=8)
             if isnothing(xlims)
@@ -30,7 +36,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
             end
             return (; axes=[ax])
         end
-        _show_interactive(builder; fig_name=fig)
+        _show_interactive(builder; fig_name=fig, output_folder)
     end
     return plotx_struct
 end
@@ -38,14 +44,19 @@ end
 function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
               xlabel="", ylabel="", title="", labels=nothing, xlims=nothing,
               ylims=nothing, ann=nothing, scatter=false, fig="",
-              ysize=14, disp=true)
-    plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ysize, nothing,
+              ysize=nothing, xsize=nothing, labelsize=20,
+              legend_position=:auto, output_folder="output", disp=true)
+    ylsize = isnothing(ysize) ? labelsize : ysize
+    xlsize = isnothing(xsize) ? labelsize : xsize
+    plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 4)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
-                      ylabel=string(ylabel), ylabelsize=ysize)
+                      ylabel=string(ylabel), ylabelsize=ylsize,
+                      xlabelsize=xlsize)
             any_label = false
+            legend_yvecs = Vector{Float64}[]
             for (i, YT) in pairs(Ys)
                 lbl = ""
                 if !isnothing(labels) && i <= length(labels) &&
@@ -78,20 +89,22 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                     end
                     scatter && scatter!(ax, X, Y; color=:red, markersize=8)
                 end
+                push!(legend_yvecs, Float64.(Y))
             end
             isnothing(xlims) || xlims!(ax, xlims[1], xlims[2])
             isnothing(ylims) || ylims!(ax, ylims[1], ylims[2])
             if !isnothing(ann)
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
             end
-            any_label && axislegend(ax)
+            any_label && axislegend(ax;
+                position=_resolve_corner(legend_position, X, legend_yvecs))
             if title != ""
                 Label(layout[0, 1], string(title); fontsize=14,
                       tellwidth=false)
             end
             return (; axes=[ax])
         end
-        _show_interactive(builder; fig_name=fig)
+        _show_interactive(builder; fig_name=fig, output_folder)
     end
     return plotx_struct
 end
@@ -99,17 +112,24 @@ end
 function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
               xlabel="", ylabels=["", ""], title="", labels=["", ""],
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
-              fig="", ysize=14, disp=true)
-    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ysize,
+              fig="", ysize=nothing, xsize=nothing, labelsize=20,
+              legend_position=:auto, output_folder="output", disp=true)
+    ylsize = isnothing(ysize) ? labelsize : ysize
+    xlsize = isnothing(xsize) ? labelsize : xsize
+    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5)
     if disp
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
+        corner = _resolve_corner(legend_position, X,
+                                 [_normalize01(Y1), _normalize01(Y2)])
+        leg_ha, leg_va = _corner_align(corner)
         builder = function(layout)
             ax1 = Axis(layout[1, 1]; xlabel=string(xlabel),
-                       ylabel=string(ylabels[1]), ylabelsize=ysize,
+                       ylabel=string(ylabels[1]), ylabelsize=ylsize,
+                       xlabelsize=xlsize,
                        ylabelcolor=:green, yticklabelcolor=:green)
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
-                       ylabelsize=ysize, ylabelcolor=:red,
+                       ylabelsize=ylsize, ylabelcolor=:red,
                        yticklabelcolor=:red, yaxisposition=:right,
                        backgroundcolor=RGBAf(0, 0, 0, 0))
             hidespines!(ax2)
@@ -128,15 +148,15 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
                 ylims!(ax2, ylims[2][1], ylims[2][2])
             end
             Legend(layout[1, 1], [l1, l2], leg_labels;
-                   tellwidth=false, tellheight=false, halign=:left,
-                   valign=:top, margin=(10, 10, 10, 10))
+                   tellwidth=false, tellheight=false, halign=leg_ha,
+                   valign=leg_va, margin=(10, 10, 10, 10))
             if title != ""
                 Label(layout[0, 1], string(title); fontsize=14,
                       tellwidth=false)
             end
             return (; axes=[ax1, ax2])
         end
-        _show_interactive(builder; fig_name=fig)
+        _show_interactive(builder; fig_name=fig, output_folder)
     end
     return plotx_struct
 end
@@ -145,19 +165,27 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
               Y2::AbstractVector{<:Number};
               xlabel="", ylabels=["", ""], title="", labels=["", ""],
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
-              fig="", ysize=14, disp=true)
+              fig="", ysize=nothing, xsize=nothing, labelsize=20,
+              legend_position=:auto, output_folder="output", disp=true)
     if length(Y1) == 1
         return plot(X, Y1[1], Y2; xlabel, ylabels, title, labels, xlims,
-                    ylims, ann, scatter, fig, ysize, disp)
+                    ylims, ann, scatter, fig, ysize, xsize, labelsize,
+                    legend_position, output_folder, disp)
     end
-    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ysize,
+    ylsize = isnothing(ysize) ? labelsize : ysize
+    xlsize = isnothing(xsize) ? labelsize : xsize
+    plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5)
     if disp
+        corner = _resolve_corner(legend_position, X,
+                                 vcat(_normalize01.(Y1), [_normalize01(Y2)]))
+        leg_ha, leg_va = _corner_align(corner)
         builder = function(layout)
             ax1 = Axis(layout[1, 1]; xlabel=string(xlabel),
-                       ylabel=string(ylabels[1]), ylabelsize=ysize)
+                       ylabel=string(ylabels[1]), ylabelsize=ylsize,
+                       xlabelsize=xlsize)
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
-                       ylabelsize=ysize, yaxisposition=:right,
+                       ylabelsize=ylsize, yaxisposition=:right,
                        backgroundcolor=RGBAf(0, 0, 0, 0))
             hidespines!(ax2)
             hidexdecorations!(ax2)
@@ -179,15 +207,15 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             push!(leg_labels, lbl2)
             isnothing(xlims) || xlims!(ax1, xlims[1], xlims[2])
             Legend(layout[1, 1], lns, leg_labels;
-                   tellwidth=false, tellheight=false, halign=:left,
-                   valign=:top, margin=(10, 10, 10, 10))
+                   tellwidth=false, tellheight=false, halign=leg_ha,
+                   valign=leg_va, margin=(10, 10, 10, 10))
             if title != ""
                 Label(layout[0, 1], string(title); fontsize=14,
                       tellwidth=false)
             end
             return (; axes=[ax1, ax2])
         end
-        _show_interactive(builder; fig_name=fig)
+        _show_interactive(builder; fig_name=fig, output_folder)
     end
     return plotx_struct
 end

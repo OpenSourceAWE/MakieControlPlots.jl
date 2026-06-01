@@ -31,9 +31,10 @@ end
 function plot2d(pos::AbstractVector, reltime::Real=0.0; zoom=true, front=false,
                 segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
                 dpi=100, dz_zoom=1.5, dz=-5.0, dx=-16.0,
-                xlim=nothing, ylim=nothing, xy=nothing)
+                xlim=nothing, ylim=nothing, xy=nothing, output_folder="output")
     return _plot2d_impl(pos, nothing, reltime; zoom, front, segments, fig,
-                        figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy)
+                        figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
+                        output_folder)
 end
 
 function plot2d(pos::AbstractVector,
@@ -41,9 +42,10 @@ function plot2d(pos::AbstractVector,
                 reltime::Real=0.0; zoom=true, front=false,
                 segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
                 dpi=100, dz_zoom=1.5, dz=1.0, dx=1.0,
-                xlim=nothing, ylim=nothing, xy=nothing)
+                xlim=nothing, ylim=nothing, xy=nothing, output_folder="output")
     return _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
-                        figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy)
+                        figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
+                        output_folder)
 end
 
 function plot2d(pos_matrix::AbstractMatrix, reltime::Real=0.0;
@@ -56,7 +58,8 @@ function plot2d(pos_matrix::AbstractMatrix, reltime::Real=0.0;
 end
 
 function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
-                      figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy)
+                      figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
+                      output_folder="output")
     key = fig
 
     num_segs_needed = if !isnothing(seg)
@@ -161,7 +164,7 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
         size_px = (round(Int, figsize[1] * dpi),
                    round(Int, figsize[2] * dpi))
         (_, screen) = _show_interactive(builder; figsize=size_px,
-                                        fig_name=key)
+                                        fig_name=key, output_folder)
         state.screen = screen
     end
 

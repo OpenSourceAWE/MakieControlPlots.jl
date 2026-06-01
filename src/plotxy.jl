@@ -1,12 +1,16 @@
 function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                 ylims=nothing, ann=nothing, scatter=false, fig="",
-                ysize=14, disp=true)
-    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ysize, nothing,
+                ysize=nothing, xsize=nothing, labelsize=20,
+                output_folder="output", disp=true)
+    ylsize = isnothing(ysize) ? labelsize : ysize
+    xlsize = isnothing(xsize) ? labelsize : xsize
+    plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 3)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
-                      ylabel=string(ylabel), ylabelsize=ysize)
+                      ylabel=string(ylabel), ylabelsize=ylsize,
+                      xlabelsize=xlsize)
             lines!(ax, X, Y)
             scatter && scatter!(ax, X, Y; color=:red, markersize=8)
             isnothing(xlims) || xlims!(ax, xlims[1], xlims[2])
@@ -20,7 +24,8 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
             end
             return (; axes=[ax])
         end
-        _show_interactive(builder; figsize=(576, 576), fig_name=fig)
+        _show_interactive(builder; figsize=(576, 576), fig_name=fig,
+                          output_folder)
     end
     return plotx_struct
 end

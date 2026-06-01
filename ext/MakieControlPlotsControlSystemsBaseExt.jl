@@ -16,7 +16,8 @@ _todb(mag) = 20 * log10(mag)
 
 function bode_plot(sys::Union{StateSpace, TransferFunction}; title="",
                    from=-1, to=1, fig=true, db=true, hz=true, bw=false,
-                   linestyle=:solid, show_title=true, fontsize=18)
+                   linestyle=:solid, show_title=true, fontsize=18,
+                   output_folder="output")
     w, mag, phase = _frequency_response(sys; from, to)
     if hz
         w = w ./ (2π)
@@ -31,17 +32,24 @@ function bode_plot(sys::Union{StateSpace, TransferFunction}; title="",
         ax1 = Axis(layout[1, 1]; xscale=log10, yscale=mag_yscale,
                    ylabel=mag_ylabel, ylabelsize=fontsize,
                    xlabelsize=fontsize, xgridvisible=true,
-                   ygridvisible=true)
+                   ygridvisible=true, xminorgridvisible=true,
+                   xminorticksvisible=true,
+                   xminorticks=IntervalsBetween(9),
+                   yminorgridvisible=!db, yminorticksvisible=!db,
+                   yminorticks=IntervalsBetween(9))
         ax2 = Axis(layout[2, 1]; xscale=log10, xlabel=xlabel,
                    ylabel="Phase [deg]", xlabelsize=fontsize,
                    ylabelsize=fontsize, xgridvisible=true,
-                   ygridvisible=true)
+                   ygridvisible=true, xminorgridvisible=true,
+                   xminorticksvisible=true,
+                   xminorticks=IntervalsBetween(9))
         lines!(ax1, w, mag_yvals; color=line_color, linestyle=linestyle)
         lines!(ax2, w, phase; color=line_color, linestyle=linestyle)
         xlims!(ax1, first(w), last(w))
         xlims!(ax2, first(w), last(w))
         linkxaxes!(ax1, ax2)
-        hidexdecorations!(ax1; grid=false, ticks=false)
+        hidexdecorations!(ax1; grid=false, ticks=false, minorgrid=false,
+                          minorticks=false)
         if show_title && title != ""
             Label(layout[0, 1], title; fontsize=fontsize, tellwidth=false)
         end
@@ -49,7 +57,8 @@ function bode_plot(sys::Union{StateSpace, TransferFunction}; title="",
     end
     _show_interactive(builder; figsize=(round(Int, 8 * 96),
                                        round(Int, 6 * 96)),
-                      fig_name=title == "" ? "bode" : title)
+                      fig_name=title == "" ? "bode" : title,
+                      output_folder=output_folder)
     return nothing
 end
 

@@ -2,34 +2,30 @@ const _LAST_BUILDER = Ref{Any}(nothing)
 
 using Printf: @sprintf
 
-function _interp_line_y(ax::Axis, x::Real)
-    for p in ax.scene.plots
-        p isa Makie.Lines || continue
-        local raw
-        try
-            raw = p[1][]
-        catch
-            continue
-        end
-        (isempty(raw) || !(eltype(raw) <: Point)) && continue
-        xs = Float64.(first.(raw))
-        ys = Float64.(last.(raw))
-        length(xs) < 2 && continue
-        if !issorted(xs)
-            ord = sortperm(xs)
-            xs = xs[ord]
-            ys = ys[ord]
-        end
-        (x < first(xs) || x > last(xs)) && continue
-        i = searchsortedlast(xs, x)
-        i == length(xs) && return ys[end]
-        x0, y0 = xs[i], ys[i]
-        x1, y1 = xs[i+1], ys[i+1]
-        x1 == x0 && return y0
-        t = (x - x0) / (x1 - x0)
-        return y0 + t * (y1 - y0)
+function _interp_line_y(p, x::Real)
+    local raw
+    try
+        raw = p[1][]
+    catch
+        return nothing
     end
-    return nothing
+    (isempty(raw) || !(eltype(raw) <: Point)) && return nothing
+    xs = Float64.(first.(raw))
+    ys = Float64.(last.(raw))
+    length(xs) < 2 && return nothing
+    if !issorted(xs)
+        ord = sortperm(xs)
+        xs = xs[ord]
+        ys = ys[ord]
+    end
+    (x < first(xs) || x > last(xs)) && return nothing
+    i = searchsortedlast(xs, x)
+    i == length(xs) && return ys[end]
+    x0, y0 = xs[i], ys[i]
+    x1, y1 = xs[i+1], ys[i+1]
+    x1 == x0 && return y0
+    t = (x - x0) / (x1 - x0)
+    return y0 + t * (y1 - y0)
 end
 
 function _set_interaction_active!(ax::Axis, name::Symbol, active::Bool)
@@ -101,8 +97,8 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     value_mode = Observable(false)
     hovered_axis = Observable{Union{Nothing, Axis}}(nothing)
     crosshair_pt = Observable(Point2f(0, 0))
-    intersect_pt = Observable(Point2f(0, 0))
-    intersect_text = Observable("")
+    line_markers = Dict{Axis,
+        Vector{Tuple{Any, Observable{Point2f}, Observable{String}}}}()
 
     for ax in axes_list
         show_ch = lift(value_mode, hovered_axis) do v, h
@@ -114,11 +110,20 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
                 linewidth=1, visible=show_ch, inspectable=false)
         hlines!(ax, cy; color=(:gray, 0.5), linestyle=:dot,
                 linewidth=1, visible=show_ch, inspectable=false)
-        scatter!(ax, intersect_pt; color=:red, markersize=6,
-                 visible=show_ch, inspectable=false)
-        text!(ax, intersect_pt; text=intersect_text, fontsize=11,
-              align=(:left, :bottom), offset=(6, 6),
-              visible=show_ch, inspectable=false)
+
+        lines_here = Any[p for p in ax.scene.plots if p isa Makie.Lines]
+        markers = Tuple{Any, Observable{Point2f}, Observable{String}}[]
+        for line in lines_here
+            pt_obs = Observable(Point2f(NaN, NaN))
+            lbl_obs = Observable("")
+            scatter!(ax, pt_obs; color=:red, markersize=6,
+                     visible=show_ch, inspectable=false)
+            text!(ax, pt_obs; text=lbl_obs, fontsize=11,
+                  align=(:left, :bottom), offset=(6, 6),
+                  visible=show_ch, inspectable=false)
+            push!(markers, (line, pt_obs, lbl_obs))
+        end
+        line_markers[ax] = markers
     end
 
     on(value_btn.clicks) do _
@@ -137,12 +142,15 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
             crosshair_pt[] = Point2f(x, y)
             hovered_axis[] = ax
             if value_mode[]
-                yi = _interp_line_y(ax, x)
-                if !isnothing(yi)
-                    intersect_pt[] = Point2f(x, yi)
-                    intersect_text[] = @sprintf(" x=%.4g  y=%.4g", x, yi)
-                else
-                    intersect_text[] = ""
+                for (line, pt_obs, lbl_obs) in line_markers[ax]
+                    yi = _interp_line_y(line, x)
+                    if isnothing(yi)
+                        pt_obs[] = Point2f(NaN, NaN)
+                        lbl_obs[] = ""
+                    else
+                        pt_obs[] = Point2f(x, yi)
+                        lbl_obs[] = @sprintf(" x=%.4g  y=%.4g", x, yi)
+                    end
                 end
             end
             return

@@ -30,8 +30,9 @@ function example_menu()
     global p
     active = true
     while active
+        isdefined(Main, :Revise) && Main.Revise.revise()
         menu = RadioMenu(options, pagesize=8)
-        choice = request("\nChoose function to execute or `q` to quit: ", menu)
+        choice = request("\nType q to quit. Choose function to execute: ", menu)
 
         if choice != -1 && choice != length(options)
             eval(Meta.parse(options[choice]))

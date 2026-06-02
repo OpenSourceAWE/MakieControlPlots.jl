@@ -114,15 +114,14 @@ function _corner_align(corner::Symbol)
     return (ha, va)
 end
 
-function _corner_relpos(corner::Symbol)
-    x = corner in (:lb, :lt) ? 0.02 : 0.98
-    y = corner in (:lb, :rb) ? 0.02 : 0.98
-    return (Point2f(x, y), _corner_align(corner))
-end
-
-function _axis_line_data(lines)
-    xs = Float64[]
-    yvecs = Vector{Float64}[]
+function _emptiest_side(px, py, lines, lims)
+    ox, oy = lims.origin[1], lims.origin[2]
+    wx, wy = lims.widths[1], lims.widths[2]
+    (wx == 0 || wy == 0) && return ((8.0, 8.0), (:left, :bottom))
+    nxp = (px - ox) / wx
+    nyp = (py - oy) / wy
+    radius = 0.18
+    counts = Dict(:rt => 0, :lt => 0, :rb => 0, :lb => 0)
     for ln in lines
         local raw
         try
@@ -130,11 +129,20 @@ function _axis_line_data(lines)
         catch
             continue
         end
-        (isempty(raw) || !(eltype(raw) <: Point)) && continue
-        isempty(xs) && (xs = Float64.(first.(raw)))
-        push!(yvecs, Float64.(last.(raw)))
+        for pt in raw
+            dx = (pt[1] - ox) / wx - nxp
+            dy = (pt[2] - oy) / wy - nyp
+            (abs(dx) > radius || abs(dy) > radius) && continue
+            (dx == 0 && dy == 0) && continue
+            counts[dx >= 0 ? (dy >= 0 ? :rt : :rb) :
+                   (dy >= 0 ? :lt : :lb)] += 1
+        end
     end
-    return xs, yvecs
+    side = findmin(counts)[2]
+    sx = side in (:rt, :rb) ? 1.0 : -1.0
+    sy = side in (:rt, :lt) ? 1.0 : -1.0
+    return ((sx * 8.0, sy * 8.0),
+            (sx > 0 ? :left : :right, sy > 0 ? :bottom : :top))
 end
 
 function _extract_axes(artifacts)
@@ -235,39 +243,39 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     apply_mode!()
 
     value_mode = Observable(false)
-    hovered_axis = Observable{Union{Nothing, Axis}}(nothing)
+    crosshair_x = Observable(0.0)
     crosshair_pt = Observable(Point2f(0, 0))
-    line_markers = Dict{Axis, Vector{Tuple{Any, Observable{Point2f}}}}()
-    axis_readout = Dict{Axis, Observable{String}}()
+    hovered = Dict{Axis, Observable{Bool}}()
+    cross_y = Dict{Axis, Observable{Float64}}()
+    line_markers = Dict{Axis, Vector{NamedTuple}}()
+    axis_lines = Dict{Axis, Vector{Any}}()
 
     for ax in axes_list
-        show_ch = lift(value_mode, hovered_axis) do v, h
-            v && h === ax
-        end
-        cx = lift(p -> p[1], crosshair_pt)
-        cy = lift(p -> p[2], crosshair_pt)
-        vlines!(ax, cx; color=(:gray, 0.5), linestyle=:dot,
+        hovered[ax] = Observable(false)
+        cross_y[ax] = Observable(0.0)
+        show_ch = lift((v, h) -> v && h, value_mode, hovered[ax])
+        vlines!(ax, crosshair_x; color=(:gray, 0.5), linestyle=:dot,
                 linewidth=1, visible=show_ch, inspectable=false)
-        hlines!(ax, cy; color=(:gray, 0.5), linestyle=:dot,
+        hlines!(ax, cross_y[ax]; color=(:gray, 0.5), linestyle=:dot,
                 linewidth=1, visible=show_ch, inspectable=false)
 
         lines_here = Any[p for p in ax.scene.plots if p isa Makie.Lines]
-        markers = Tuple{Any, Observable{Point2f}}[]
+        axis_lines[ax] = lines_here
+        markers = NamedTuple[]
         for line in lines_here
             pt_obs = Observable(Point2f(NaN, NaN))
+            lbl_obs = Observable("")
+            off_obs = Observable((8.0, 8.0))
+            align_obs = Observable((:left, :bottom))
             scatter!(ax, pt_obs; color=:red, markersize=6,
                      visible=show_ch, inspectable=false)
-            push!(markers, (line, pt_obs))
+            text!(ax, pt_obs; text=lbl_obs, fontsize=11, offset=off_obs,
+                  align=align_obs, color=:black, visible=show_ch,
+                  inspectable=false)
+            push!(markers, (line=line, pt=pt_obs, lbl=lbl_obs, off=off_obs,
+                            align=align_obs))
         end
         line_markers[ax] = markers
-
-        xs, yvecs = _axis_line_data(lines_here)
-        corner = isempty(yvecs) ? :rt : _legend_corner(xs, yvecs)
-        relpos, talign = _corner_relpos(corner)
-        readout = Observable("")
-        axis_readout[ax] = readout
-        text!(ax, relpos; text=readout, space=:relative, align=talign,
-              fontsize=12, color=:black, visible=show_ch, inspectable=false)
     end
 
     on(value_btn.clicks) do _
@@ -277,40 +285,60 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     end
 
     on(events(fig).mouseposition) do _
+        primary = false
         for ax in axes_list
-            Makie.is_mouseinside(ax.scene) || continue
+            inside = Makie.is_mouseinside(ax.scene)
+            hovered[ax][] = inside
+            inside || continue
             mpos = Makie.mouseposition(ax.scene)
             inv_tf = Makie.inverse_transform(Makie.transform_func(ax.scene))
             x, y = Makie.apply_transform(inv_tf, mpos)
-            cursor[] = @sprintf("x=%.4g  y=%.4g", x, y)
-            crosshair_pt[] = Point2f(x, y)
-            hovered_axis[] = ax
-            if value_mode[]
-                parts = String[@sprintf("x=%.4g", x)]
-                for (line, pt_obs) in line_markers[ax]
-                    yi = _interp_line_y(line, x)
-                    if isnothing(yi)
-                        pt_obs[] = Point2f(NaN, NaN)
-                    else
-                        pt_obs[] = Point2f(x, yi)
-                        push!(parts, @sprintf("y=%.4g", yi))
-                    end
-                end
-                axis_readout[ax][] = join(parts, "\n")
+            cross_y[ax][] = y
+            if !primary
+                primary = true
+                crosshair_x[] = x
+                crosshair_pt[] = Point2f(x, y)
+                cursor[] = @sprintf("x=%.4g  y=%.4g", x, y)
             end
-            return
+            value_mode[] || continue
+            lims = ax.finallimits[]
+            for m in line_markers[ax]
+                yi = _interp_line_y(m.line, x)
+                if isnothing(yi)
+                    m.pt[] = Point2f(NaN, NaN)
+                    m.lbl[] = ""
+                else
+                    m.pt[] = Point2f(x, yi)
+                    m.lbl[] = @sprintf("x=%.4g  y=%.4g", x, yi)
+                    off, align = _emptiest_side(x, yi, axis_lines[ax], lims)
+                    m.off[] = off
+                    m.align[] = align
+                end
+            end
         end
-        cursor[] = "x=0.0  y=0.0"
-        hovered_axis[] = nothing
+        primary || (cursor[] = "x=0.0  y=0.0")
     end
 
     on(events(fig).mousebutton) do event
         value_mode[] || return
         (event.button == Makie.Mouse.left &&
          event.action == Makie.Mouse.press) || return
-        hovered_axis[] === nothing && return
-        p = crosshair_pt[]
-        coords = @sprintf("%.6g, %.6g", p[1], p[2])
+        any(h -> h[], values(hovered)) || return
+        pts = Point2f[]
+        for ax in axes_list
+            hovered[ax][] || continue
+            for m in line_markers[ax]
+                p = m.pt[]
+                isnan(p[1]) || push!(pts, p)
+            end
+        end
+        if isempty(pts)
+            p = crosshair_pt[]
+            pts = Point2f[p]
+        end
+        coords = "[" *
+            join((@sprintf("(%.6g, %.6g)", p[1], p[2]) for p in pts), ", ") *
+            "]"
         _copy_clipboard(coords)
         flash_status!("copied $coords")
     end

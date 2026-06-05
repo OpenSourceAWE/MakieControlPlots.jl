@@ -1,7 +1,7 @@
 name = "MakieControlPlots"
-uuid = "dd8b1ff1-c966-4007-99c8-33195950d5b8"
+uuid = "6d616b69-6563-6f6e-7472-6f6c706c6f74"
 authors = ["Bart van de Lint <bart@vandelint.net>"]
-version = "0.1.0-DEV"
+version = "0.1.0"
 
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"

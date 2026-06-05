@@ -1,7 +1,7 @@
 [deps]
 ControlSystemsBase = "aaaaaaaa-a6ca-5380-bf3e-84a91bcd477e"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-MakieControlPlots = "dd8b1ff1-c966-4007-99c8-33195950d5b8"
+MakieControlPlots = "6d616b69-6563-6f6e-7472-6f6c706c6f74"
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [sources]

@@ -114,6 +114,12 @@ function _corner_align(corner::Symbol)
     return (ha, va)
 end
 
+function _mouse_data(ax::Axis)
+    mpos = Makie.mouseposition(ax.scene)
+    inv_tf = Makie.inverse_transform(Makie.transform_func(ax.scene))
+    return Makie.apply_transform(inv_tf, mpos)
+end
+
 function _emptiest_side(px, py, lines, lims)
     ox, oy = lims.origin[1], lims.origin[2]
     wx, wy = lims.widths[1], lims.widths[2]
@@ -234,13 +240,24 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     mode = Ref(:zoom)
     apply_mode! = function()
         for ax in axes_list
-            _set_interaction_active!(ax, :dragpan,       mode[] == :pan)
-            _set_interaction_active!(ax, :rectanglezoom, mode[] == :zoom)
+            _set_interaction_active!(ax, :dragpan, mode[] == :pan)
+            _set_interaction_active!(ax, :rectanglezoom, false)
         end
         pan_btn.buttoncolor[]  = mode[] == :pan  ? active_color : inactive_color
         zoom_btn.buttoncolor[] = mode[] == :zoom ? active_color : inactive_color
     end
     apply_mode!()
+
+    zoom_start = Dict{Axis, Point2f}()
+    zooming = Ref(false)
+    press_px = Ref(Point2f(0, 0))
+    rubber = Observable(Rect2f(0, 0, 0, 0))
+    rubber_vis = Observable(false)
+    rubber_plot = poly!(fig.scene, rubber; space=:pixel,
+                        color=RGBAf(0.3, 0.5, 1.0, 0.12),
+                        strokecolor=RGBAf(0.2, 0.4, 0.9, 0.8),
+                        strokewidth=1, visible=rubber_vis, inspectable=false)
+    translate!(rubber_plot, 0, 0, 1000)
 
     value_mode = Observable(false)
     crosshair_x = Observable(0.0)
@@ -285,6 +302,12 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     end
 
     on(events(fig).mouseposition) do _
+        if zooming[]
+            cur = events(fig).mouseposition[]
+            s = press_px[]
+            rubber[] = Rect2f(min(s[1], cur[1]), min(s[2], cur[2]),
+                              abs(cur[1] - s[1]), abs(cur[2] - s[2]))
+        end
         primary = false
         for ax in axes_list
             inside = Makie.is_mouseinside(ax.scene)
@@ -320,9 +343,40 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     end
 
     on(events(fig).mousebutton) do event
-        value_mode[] || return
-        (event.button == Makie.Mouse.left &&
-         event.action == Makie.Mouse.press) || return
+        event.button == Makie.Mouse.left || return
+        if event.action == Makie.Mouse.press
+            press_px[] = events(fig).mouseposition[]
+            if mode[] == :zoom
+                empty!(zoom_start)
+                for ax in axes_list
+                    Makie.is_mouseinside(ax.scene) || continue
+                    zoom_start[ax] = _mouse_data(ax)
+                end
+                if !isempty(zoom_start)
+                    rubber[] = Rect2f(press_px[][1], press_px[][2], 0, 0)
+                    rubber_vis[] = true
+                    zooming[] = true
+                end
+            end
+            return
+        end
+        cur_px = events(fig).mouseposition[]
+        moved = hypot(cur_px[1] - press_px[][1], cur_px[2] - press_px[][2])
+        if zooming[]
+            zooming[] = false
+            rubber_vis[] = false
+            if moved >= 5
+                for (ax, sd) in zoom_start
+                    ed = _mouse_data(ax)
+                    lo1, hi1 = minmax(sd[1], ed[1])
+                    lo2, hi2 = minmax(sd[2], ed[2])
+                    (hi1 > lo1 && hi2 > lo2) &&
+                        Makie.limits!(ax, lo1, hi1, lo2, hi2)
+                end
+            end
+            empty!(zoom_start)
+        end
+        (value_mode[] && moved < 5) || return
         any(h -> h[], values(hovered)) || return
         pts = Point2f[]
         for ax in axes_list

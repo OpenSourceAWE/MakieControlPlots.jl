@@ -2,5 +2,5 @@ version = 1
 
 [[annotations]]
 path = "**"
-SPDX-FileCopyrightText = "2026 Bart van de Lint <bart@vandelint.net>"
+SPDX-FileCopyrightText = ["2026 Bart van de Lint <bart@vandelint.net>", "2024 Uwe Fechner <u.fechner-1@tudelft.nl>"]
 SPDX-License-Identifier = "MIT"

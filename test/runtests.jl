@@ -112,6 +112,27 @@ Y = X .^ 2
         end
     end
 
+    @testset "saved size matches screen" begin
+        import CairoMakie
+        import Makie
+        import Makie: Figure, FileIO
+        CairoMakie.activate!()
+        Base.display(::Figure) = nothing
+        import MakieControlPlots: _export_figure, _LAST_BUILDER, _LAST_FIGSIZE
+
+        plotx(X, Y, 2 .* Y, 3 .* Y, 4 .* Y, 5 .* Y;
+              ylabels=["a","b","c","d","e"], disp=true)
+        figsize = _LAST_FIGSIZE[]
+        @test figsize[2] > figsize[1]
+        mktempdir() do dir
+            png = joinpath(dir, "tall.png")
+            _export_figure(png, _LAST_BUILDER[]; figsize)
+            img = FileIO.load(png)
+            ppu = 2
+            @test size(img) == (figsize[2] * ppu, figsize[1] * ppu)
+        end
+    end
+
     @testset "bode_plot extension" begin
         import ControlSystemsBase
         import CairoMakie

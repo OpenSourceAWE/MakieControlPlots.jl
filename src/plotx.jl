@@ -2,11 +2,12 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=20,
                legend_position=:auto, output_folder="output", yzoom=1.0,
-               disp=true)
+               disp=false, new_screen=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
-                         yzoom, xlims, ylims, ann, scatter, fig, 2)
+                         yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
+                         legend_position)
     if disp
         n = length(Y)
         size_px = (round(Int, 8 * 96),
@@ -73,7 +74,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
             return (; axes=axes_arr)
         end
         _show_interactive(builder; figsize=size_px, fig_name=fig,
-                          output_folder)
+                          output_folder, new_screen)
     end
     return plotx_struct
 end

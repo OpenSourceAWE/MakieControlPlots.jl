@@ -7,4 +7,4 @@ using MakieControlPlots
 
 P = tf([1.], [1., 1])
 
-bode_plot(P; from=-2, to=2, title="Low pass filter")
+fig = bode_plot(P; from=-2, to=2, fig="bode", title="Low pass filter")

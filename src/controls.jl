@@ -1,4 +1,5 @@
 const _LAST_BUILDER = Ref{Any}(nothing)
+const _SCREENS = Dict{String, Any}()
 
 using Printf: @sprintf
 
@@ -440,8 +441,28 @@ function _prime_focus!(fig::Figure, screen)
     return nothing
 end
 
+function _display_figure(fig::Figure, fig_name::String, new_screen::Bool)
+    if !(new_screen && Makie.current_backend() === GLMakie)
+        return display(fig)
+    end
+    title = isempty(fig_name) ? "Makie" : fig_name
+    existing = get(_SCREENS, fig_name, nothing)
+    if existing isa GLMakie.Screen && isopen(existing)
+        GLMakie.set_title!(existing, title)
+        display(existing, fig)
+        return existing
+    end
+    screen = GLMakie.Screen(; title)
+    for k in collect(keys(_SCREENS))
+        _SCREENS[k] === screen && delete!(_SCREENS, k)
+    end
+    _SCREENS[fig_name] = screen
+    display(screen, fig)
+    return screen
+end
+
 function _show_interactive(builder; figsize=(720, 580), fig_name::String="",
-                           output_folder="output")
+                           output_folder="output", new_screen=true)
     fig = Figure(; size=figsize)
     plot_grid = GridLayout(fig[1, 1])
     artifacts = builder(plot_grid)
@@ -449,7 +470,7 @@ function _show_interactive(builder; figsize=(720, 580), fig_name::String="",
     _add_controls!(fig, axes_list, builder, fig_name; output_folder,
                    fig_width=figsize[1])
     _LAST_BUILDER[] = builder
-    screen = display(fig)
+    screen = _display_figure(fig, fig_name, new_screen)
     _prime_focus!(fig, screen)
     return (fig, screen)
 end

@@ -12,4 +12,4 @@ Y8 = 0.2*cos.(4T)
 Y9 = 0.2*sin.(5T)
 p=plotx(T, Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8, Y9; ylabels=["sin","cos", "0.2sin(2T)", "0.2cos(2T)", 
         "0.2sin(3T)", "0.2cos(3T)", "0.2sin(4T)", "0.2cos(4T)", "0.2cos(4T)", "0.2sin(5T)"], 
-        ysize=11, yzoom=0.7, bottom=0.015, fig="multi-channel", title="Multiple channels, many plots")
+        ysize=11, yzoom=0.7, fig="multi-channel-many", title="Multiple channels, many plots")

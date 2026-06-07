@@ -121,7 +121,9 @@ Y = X .^ 2
         import MakieControlPlots: _export_figure, _LAST_BUILDER
 
         sys = ControlSystemsBase.tf([1.0], [1.0, 1.0])
-        MakieControlPlots.bode_plot(sys; from=-2, to=2, title="lpf")
+        bp = MakieControlPlots.bode_plot(sys; from=-2, to=2, title="lpf")
+        @test bp.fig == ""
+        MakieControlPlots.bode_plot(sys; from=-2, to=2, title="lpf", disp=true)
         mktempdir() do dir
             png = joinpath(dir, "bode.png")
             _export_figure(png, _LAST_BUILDER[])

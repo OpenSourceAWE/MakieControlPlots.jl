@@ -35,6 +35,8 @@ mutable struct PlotX
     scatter::Bool
     fig::String
     type::Int
+    xsize::Int
+    legend_position
 end
 
 save(filename::String, p::PlotX) = JLD2.save(filename, "plot", p)
@@ -47,29 +49,32 @@ include("plotxy.jl")
 include("plot2d.jl")
 include("precompile.jl")
 
-function Base.display(p::PlotX)
+function Base.display(p::PlotX; new_screen=true)
     if p.type == 1
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
-             fig=p.fig, ysize=p.ysize, disp=true)
+             fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen)
     elseif p.type == 2
         plotx(p.X, p.Y...; xlabel=p.xlabel, ylabels=p.ylabels,
               title=p.title, labels=p.labels, xlims=p.xlims, ylims=p.ylims,
               ann=p.ann, scatter=p.scatter, fig=p.fig, ysize=p.ysize,
-              yzoom=p.yzoom, disp=true)
+              xsize=p.xsize, legend_position=p.legend_position,
+              yzoom=p.yzoom, disp=true, new_screen)
     elseif p.type == 3
         plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
                xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
-               fig=p.fig, ysize=p.ysize, disp=true)
+               fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen)
     elseif p.type == 4
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,
-             scatter=p.scatter, fig=p.fig, ysize=p.ysize, disp=true)
+             scatter=p.scatter, fig=p.fig, ysize=p.ysize, xsize=p.xsize,
+             legend_position=p.legend_position, disp=true, new_screen)
     elseif p.type == 5
         plot(p.X, p.Y[1], p.Y[2]; xlabel=p.xlabel, ylabels=p.ylabels,
              title=p.title, labels=p.labels, xlims=p.xlims, ylims=p.ylims,
              ann=p.ann, scatter=p.scatter, fig=p.fig, ysize=p.ysize,
-             disp=true)
+             xsize=p.xsize, legend_position=p.legend_position,
+             disp=true, new_screen)
     end
     return nothing
 end

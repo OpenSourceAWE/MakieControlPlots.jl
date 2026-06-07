@@ -6,8 +6,6 @@ using ControlSystemsBase
 using MakieControlPlots
 using REPL.TerminalMenus
 
-p = nothing
-
 options = ["basic = include(\"basic.jl\")",
            "Bode_plot = include(\"bode-plot.jl\")",
            "dual_one_axis_error_bars = include(\"dual_one_axis_error_bars.jl\")",
@@ -27,7 +25,6 @@ options = ["basic = include(\"basic.jl\")",
            "quit"]
 
 function example_menu()
-    global p
     active = true
     while active
         isdefined(Main, :Revise) && Main.Revise.revise()
@@ -35,11 +32,8 @@ function example_menu()
         choice = request("\nType q to quit. Choose function to execute: ", menu)
 
         if choice != -1 && choice != length(options)
-            eval(Meta.parse(options[choice]))
-            if !isnothing(p)
-                display(p)
-                p=nothing
-            end
+            result = eval(Meta.parse(options[choice]))
+            result === nothing || display(result)
         else
             println("Left menu. Press <ctrl><d> to quit Julia!")
             active = false

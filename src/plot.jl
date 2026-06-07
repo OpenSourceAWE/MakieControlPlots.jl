@@ -1,19 +1,19 @@
 function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
-              output_folder="output", disp=true)
+              output_folder="output", disp=false, new_screen=true)
     X = 1:length(Y)
     return plot(X, Y; xlabel, ylabel, title, fig, ysize, xsize, labelsize,
-                output_folder, disp)
+                output_folder, disp, new_screen)
 end
 
 function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
-              output_folder="output", disp=true)
+              output_folder="output", disp=false, new_screen=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 1)
+                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -36,7 +36,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
             end
             return (; axes=[ax])
         end
-        _show_interactive(builder; fig_name=fig, output_folder)
+        _show_interactive(builder; fig_name=fig, output_folder, new_screen)
     end
     return plotx_struct
 end
@@ -45,11 +45,13 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
               xlabel="", ylabel="", title="", labels=nothing, xlims=nothing,
               ylims=nothing, ann=nothing, scatter=false, fig="",
               ysize=nothing, xsize=nothing, labelsize=20,
-              legend_position=:auto, output_folder="output", disp=true)
+              legend_position=:auto, output_folder="output", disp=false,
+              new_screen=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 4)
+                         xlims, ylims, ann, scatter, fig, 4, xlsize,
+                         legend_position)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -104,7 +106,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
             end
             return (; axes=[ax])
         end
-        _show_interactive(builder; fig_name=fig, output_folder)
+        _show_interactive(builder; fig_name=fig, output_folder, new_screen)
     end
     return plotx_struct
 end
@@ -113,11 +115,13 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
               xlabel="", ylabels=["", ""], title="", labels=["", ""],
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
-              legend_position=:auto, output_folder="output", disp=true)
+              legend_position=:auto, output_folder="output", disp=false,
+              new_screen=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
-                         nothing, xlims, ylims, ann, scatter, fig, 5)
+                         nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
+                         legend_position)
     if disp
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
         corner = _resolve_corner(legend_position, X,
@@ -156,7 +160,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             end
             return (; axes=[ax1, ax2])
         end
-        _show_interactive(builder; fig_name=fig, output_folder)
+        _show_interactive(builder; fig_name=fig, output_folder, new_screen)
     end
     return plotx_struct
 end
@@ -166,16 +170,18 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
               xlabel="", ylabels=["", ""], title="", labels=["", ""],
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
-              legend_position=:auto, output_folder="output", disp=true)
+              legend_position=:auto, output_folder="output", disp=false,
+              new_screen=true)
     if length(Y1) == 1
         return plot(X, Y1[1], Y2; xlabel, ylabels, title, labels, xlims,
                     ylims, ann, scatter, fig, ysize, xsize, labelsize,
-                    legend_position, output_folder, disp)
+                    legend_position, output_folder, disp, new_screen)
     end
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
-                         nothing, xlims, ylims, ann, scatter, fig, 5)
+                         nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
+                         legend_position)
     if disp
         corner = _resolve_corner(legend_position, X,
                                  vcat(_normalize01.(Y1), [_normalize01(Y2)]))
@@ -215,7 +221,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             end
             return (; axes=[ax1, ax2])
         end
-        _show_interactive(builder; fig_name=fig, output_folder)
+        _show_interactive(builder; fig_name=fig, output_folder, new_screen)
     end
     return plotx_struct
 end

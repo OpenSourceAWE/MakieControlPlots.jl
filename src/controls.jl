@@ -371,7 +371,7 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
                     lo1, hi1 = minmax(sd[1], ed[1])
                     lo2, hi2 = minmax(sd[2], ed[2])
                     (hi1 > lo1 && hi2 > lo2) &&
-                        Makie.limits!(ax, lo1, hi1, lo2, hi2)
+                        (ax.targetlimits[] = Makie.BBox(lo1, hi1, lo2, hi2))
                 end
             end
             empty!(zoom_start)
@@ -434,6 +434,12 @@ function _export_figure(filename::String, builder)
     return filename
 end
 
+function _prime_focus!(fig::Figure, screen)
+    screen isa GLMakie.Screen || return nothing
+    events(fig).hasfocus[] = true
+    return nothing
+end
+
 function _show_interactive(builder; figsize=(720, 580), fig_name::String="",
                            output_folder="output")
     fig = Figure(; size=figsize)
@@ -444,6 +450,7 @@ function _show_interactive(builder; figsize=(720, 580), fig_name::String="",
                    fig_width=figsize[1])
     _LAST_BUILDER[] = builder
     screen = display(fig)
+    _prime_focus!(fig, screen)
     return (fig, screen)
 end
 

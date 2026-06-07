@@ -3,6 +3,9 @@ uuid = "6d616b69-6563-6f6e-7472-6f6c706c6f74"
 authors = ["Bart van de Lint <bart@vandelint.net>"]
 version = "0.1.0"
 
+[workspace]
+projects = ["examples", "test"]
+
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
@@ -28,11 +31,4 @@ LaTeXStrings = "1"
 Makie = "0.23, 0.24"
 PrecompileTools = "1"
 StaticArraysCore = "1"
-julia = "1.10"
-
-[extras]
-ControlSystemsBase = "aaaaaaaa-a6ca-5380-bf3e-84a91bcd477e"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test", "ControlSystemsBase"]
+julia = "1.11, 1.12"

@@ -172,7 +172,7 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     active_color   = RGBAf(0.55, 0.78, 1.0, 1.0)
     btn_fontsize = 12
     info_fontsize = 13
-    btn_labels = ["⇆ Pan", "⌕ Zoom", "⌂ Home", "↓ PNG", "↓ PDF", "⌖ Value"]
+    btn_labels = ["⌂ Home", "⌕ Zoom", "⇆ Pan", "↓ PNG", "↓ PDF", "⌖ Value"]
     grid = GridLayout(fig[2, 1]; tellwidth=false, tellheight=true)
     btns = GridLayout(grid[1, 1]; tellwidth=true)
     sum_len = sum(length, btn_labels)
@@ -189,9 +189,9 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
                       height=26, padding=(6, 6, 3, 3),
                       buttoncolor=is_active ? active_color : inactive_color)
     end
-    pan_btn   = mkbtn(1, btn_labels[1], false)
+    home_btn  = mkbtn(1, btn_labels[1], false)
     zoom_btn  = mkbtn(2, btn_labels[2], true)
-    home_btn  = mkbtn(3, btn_labels[3], false)
+    pan_btn   = mkbtn(3, btn_labels[3], false)
     png_btn   = mkbtn(4, btn_labels[4], false)
     pdf_btn   = mkbtn(5, btn_labels[5], false)
     value_btn = mkbtn(6, btn_labels[6], false)

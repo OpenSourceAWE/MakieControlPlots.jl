@@ -2,7 +2,7 @@
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ControlSystemsBase = "aaaaaaaa-a6ca-5380-bf3e-84a91bcd477e"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-MakieControlPlots = "6d616b69-6563-6f6e-7472-6f6c706c6f74"
+MakieControlPlots = "6d616b69-6563-4f6e-8472-6f6c706c6f74"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [sources]

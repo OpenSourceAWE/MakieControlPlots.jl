@@ -1,6 +1,8 @@
 const _LAST_BUILDER = Ref{Any}(nothing)
 const _LAST_FIGSIZE = Ref{Any}(nothing)
 const _SCREENS = Dict{String, Any}()
+const _CONTROLS_HEIGHT = 40
+const _DEFAULT_PLOTSIZE = (640, 480)
 
 using Printf: @sprintf
 
@@ -167,7 +169,7 @@ end
 
 function _add_controls!(fig::Figure, axes_list::AbstractVector,
                         builder, fig_name::String; output_folder="output",
-                        fig_width=720, figsize=(720, 580))
+                        fig_width=640, figsize=_DEFAULT_PLOTSIZE)
     inactive_color = RGBAf(0.88, 0.88, 0.88, 1.0)
     active_color   = RGBAf(0.55, 0.78, 1.0, 1.0)
     btn_fontsize = 12
@@ -425,13 +427,17 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     return nothing
 end
 
-function _export_figure(filename::String, builder; figsize=(720, 580))
+function _export_figure(filename::String, builder; figsize=_DEFAULT_PLOTSIZE)
     fig = Figure(; size=figsize)
     plot_grid = GridLayout(fig[1, 1])
     builder(plot_grid)
     CairoMakie.activate!()
     try
-        Makie.save(filename, fig)
+        if endswith(lowercase(filename), ".png")
+            Makie.save(filename, fig; px_per_unit=1)
+        else
+            Makie.save(filename, fig)
+        end
     finally
         GLMakie.activate!()
     end
@@ -464,14 +470,16 @@ function _display_figure(fig::Figure, fig_name::String, new_screen::Bool)
     return screen
 end
 
-function _show_interactive(builder; figsize=(720, 580), fig_name::String="",
-                           output_folder="output", new_screen=true)
-    fig = Figure(; size=figsize)
+function _show_interactive(builder; figsize=_DEFAULT_PLOTSIZE,
+                           fig_name::String="", output_folder="output",
+                           new_screen=true)
+    window_size = (figsize[1], figsize[2] + _CONTROLS_HEIGHT)
+    fig = Figure(; size=window_size)
     plot_grid = GridLayout(fig[1, 1])
     artifacts = builder(plot_grid)
     axes_list = _extract_axes(artifacts)
     _add_controls!(fig, axes_list, builder, fig_name; output_folder,
-                   fig_width=figsize[1], figsize)
+                   fig_width=window_size[1], figsize)
     _LAST_BUILDER[] = builder
     _LAST_FIGSIZE[] = figsize
     screen = _display_figure(fig, fig_name, new_screen)
@@ -487,7 +495,7 @@ function savefig(filename::String; output_folder="output")
     name = replace(basename(filename), " " => "_")
     target = isempty(dir) ? joinpath(_ensure_folder(output_folder), name) :
              joinpath(dir, name)
-    figsize = something(_LAST_FIGSIZE[], (720, 580))
+    figsize = something(_LAST_FIGSIZE[], _DEFAULT_PLOTSIZE)
     path = _export_figure(target, _LAST_BUILDER[]; figsize)
     @info "wrote $path"
     return path

@@ -112,6 +112,30 @@ Y = X .^ 2
         end
     end
 
+    @testset "export preserves zoom" begin
+        import CairoMakie
+        import Makie
+        import Makie: Figure, GridLayout, FileIO
+        CairoMakie.activate!()
+        Base.display(::Figure) = nothing
+        import MakieControlPlots: _export_figure, _LAST_BUILDER, _extract_axes
+
+        plot(X, Y; xlabel="x", ylabel="y", disp=true)
+        builder = _LAST_BUILDER[]
+        fig = Figure()
+        live = _extract_axes(builder(GridLayout(fig[1, 1])))
+        @test !isempty(live)
+        Makie.limits!(live[1], 0.2, 0.4, 0.0, 0.1)
+        mktempdir() do dir
+            zoomed = joinpath(dir, "zoomed.png")
+            full = joinpath(dir, "full.png")
+            _export_figure(zoomed, builder, live)
+            _export_figure(full, builder)
+            @test isfile(zoomed) && isfile(full)
+            @test FileIO.load(zoomed) != FileIO.load(full)
+        end
+    end
+
     @testset "saved size matches screen" begin
         import CairoMakie
         import Makie

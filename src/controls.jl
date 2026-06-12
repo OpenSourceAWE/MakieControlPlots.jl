@@ -1,5 +1,6 @@
 const _LAST_BUILDER = Ref{Any}(nothing)
 const _LAST_FIGSIZE = Ref{Any}(nothing)
+const _LAST_AXES = Ref{Any}(nothing)
 const _SCREENS = Dict{String, Any}()
 const _CONTROLS_HEIGHT = 40
 const _DEFAULT_PLOTSIZE = (640, 480)
@@ -415,22 +416,41 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
         end
     end
     on(png_btn.clicks) do _
-        path = _export_figure(_output_path(output_folder, base, "png"), builder;
-                              figsize)
+        path = _export_figure(_output_path(output_folder, base, "png"), builder,
+                              axes_list; figsize)
         flash_status!("saved $path")
     end
     on(pdf_btn.clicks) do _
-        path = _export_figure(_output_path(output_folder, base, "pdf"), builder;
-                              figsize)
+        path = _export_figure(_output_path(output_folder, base, "pdf"), builder,
+                              axes_list; figsize)
         flash_status!("saved $path")
     end
     return nothing
 end
 
-function _export_figure(filename::String, builder; figsize=_DEFAULT_PLOTSIZE)
+"""
+    _copy_limits!(target_axes, source_axes)
+
+Copy the current view (zoom/pan) from each source axis onto the matching
+target axis, so exports reflect what is shown on screen.
+"""
+function _copy_limits!(target_axes, source_axes)
+    source_axes isa AbstractVector || return nothing
+    length(target_axes) == length(source_axes) || return nothing
+    for (target, source) in zip(target_axes, source_axes)
+        Makie.limits!(target, source.finallimits[])
+    end
+    return nothing
+end
+
+function _export_figure(filename::String, builder, source_axes=nothing;
+                        figsize=_DEFAULT_PLOTSIZE)
     fig = Figure(; size=figsize)
     plot_grid = GridLayout(fig[1, 1])
-    builder(plot_grid)
+    artifacts = builder(plot_grid)
+    if source_axes !== nothing
+        _copy_limits!(_extract_axes(artifacts), source_axes)
+    end
     CairoMakie.activate!()
     try
         if endswith(lowercase(filename), ".png")
@@ -482,6 +502,7 @@ function _show_interactive(builder; figsize=_DEFAULT_PLOTSIZE,
                    fig_width=window_size[1], figsize)
     _LAST_BUILDER[] = builder
     _LAST_FIGSIZE[] = figsize
+    _LAST_AXES[] = axes_list
     screen = _display_figure(fig, fig_name, new_screen)
     _prime_focus!(fig, screen)
     return (fig, screen)
@@ -496,7 +517,7 @@ function savefig(filename::String; output_folder="output")
     target = isempty(dir) ? joinpath(_ensure_folder(output_folder), name) :
              joinpath(dir, name)
     figsize = something(_LAST_FIGSIZE[], _DEFAULT_PLOTSIZE)
-    path = _export_figure(target, _LAST_BUILDER[]; figsize)
+    path = _export_figure(target, _LAST_BUILDER[], _LAST_AXES[]; figsize)
     @info "wrote $path"
     return path
 end

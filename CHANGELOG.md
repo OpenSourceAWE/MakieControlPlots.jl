@@ -14,6 +14,8 @@
 - Corrected the package UUID.
 
 ### Fixed
+- Saving a plot (PNG/PDF buttons or `savefig`) now keeps the current zoom and
+  pan, so the exported image matches what is shown on screen.
 - Plot windows and exported images now use a 4:3 aspect ratio matching
   ControlPlots.jl. The default plot size is 640×480.
 - Zoom and Home reset behavior.

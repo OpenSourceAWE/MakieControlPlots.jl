@@ -1,19 +1,21 @@
 function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
-              output_folder="output", disp=false, new_screen=true)
+              output_folder="output", disp=false, new_screen=true,
+              titlesize=14)
     X = 1:length(Y)
     return plot(X, Y; xlabel, ylabel, title, fig, ysize, xsize, labelsize,
-                output_folder, disp, new_screen)
+                output_folder, disp, new_screen, titlesize)
 end
 
 function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
-              output_folder="output", disp=false, new_screen=true)
+              output_folder="output", disp=false, new_screen=true,
+              titlesize=14)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, 20)
+                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, 20, titlesize)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -31,7 +33,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
             end
             if title != ""
-                Label(layout[0, 1], string(title); fontsize=14,
+                Label(layout[0, 1], string(title); fontsize=titlesize,
                       tellwidth=false)
             end
             return (; axes=[ax])
@@ -46,12 +48,12 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
               ylims=nothing, ann=nothing, scatter=false, fig="",
               ysize=nothing, xsize=nothing, labelsize=20,
               legend_position=:auto, output_folder="output", disp=false,
-              new_screen=true, legendsize=20)
+              new_screen=true, legendsize=20, titlesize=14)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 4, xlsize,
-                         legend_position, 20)
+                         legend_position, 20, titlesize)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -102,7 +104,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                 position=_resolve_corner(legend_position, X, legend_yvecs),
                 labelsize=legendsize)
             if title != ""
-                Label(layout[0, 1], string(title); fontsize=14,
+                Label(layout[0, 1], string(title); fontsize=titlesize,
                       tellwidth=false)
             end
             return (; axes=[ax])
@@ -117,12 +119,12 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               legend_position=:auto, output_folder="output", disp=false,
-              new_screen=true, legendsize=20)
+              new_screen=true, legendsize=20, titlesize=14)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, 20)
+                         legend_position, 20, titlesize)
     if disp
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
         corner = _resolve_corner(legend_position, X,
@@ -157,7 +159,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
                    valign=leg_va, margin=(10, 10, 10, 10),
                    labelsize=legendsize)
             if title != ""
-                Label(layout[0, 1], string(title); fontsize=14,
+                Label(layout[0, 1], string(title); fontsize=titlesize,
                       tellwidth=false)
             end
             return (; axes=[ax1, ax2])
@@ -173,18 +175,18 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               legend_position=:auto, output_folder="output", disp=false,
-              new_screen=true, legendsize=20)
+              new_screen=true, legendsize=20, titlesize=14)
     if length(Y1) == 1
         return plot(X, Y1[1], Y2; xlabel, ylabels, title, labels, xlims,
                     ylims, ann, scatter, fig, ysize, xsize, labelsize,
                     legend_position, output_folder, disp, new_screen,
-                    legendsize)
+                    legendsize, titlesize)
     end
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, 20)
+                         legend_position, 20, titlesize)
     if disp
         corner = _resolve_corner(legend_position, X,
                                  vcat(_normalize01.(Y1), [_normalize01(Y2)]))
@@ -220,7 +222,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
                    valign=leg_va, margin=(10, 10, 10, 10),
                    labelsize=legendsize)
             if title != ""
-                Label(layout[0, 1], string(title); fontsize=14,
+                Label(layout[0, 1], string(title); fontsize=titlesize,
                       tellwidth=false)
             end
             return (; axes=[ax1, ax2])

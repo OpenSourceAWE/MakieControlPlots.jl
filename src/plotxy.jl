@@ -1,11 +1,12 @@
 function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                 ylims=nothing, ann=nothing, scatter=false, fig="",
                 ysize=nothing, xsize=nothing, labelsize=20,
-                output_folder="output", disp=false, new_screen=true)
+                output_folder="output", disp=false, new_screen=true,
+                titlesize=14)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, 20)
+                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, 20, titlesize)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -19,7 +20,7 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
             end
             if title != ""
-                Label(layout[0, 1], string(title); fontsize=14,
+                Label(layout[0, 1], string(title); fontsize=titlesize,
                       tellwidth=false)
             end
             return (; axes=[ax])

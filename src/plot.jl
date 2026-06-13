@@ -53,7 +53,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 4, xlsize,
-                         legend_position, 20, titlesize)
+                         legend_position, legendsize, titlesize)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -124,7 +124,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, 20, titlesize)
+                         legend_position, legendsize, titlesize)
     if disp
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
         corner = _resolve_corner(legend_position, X,
@@ -186,7 +186,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, 20, titlesize)
+                         legend_position, legendsize, titlesize)
     if disp
         corner = _resolve_corner(legend_position, X,
                                  vcat(_normalize01.(Y1), [_normalize01(Y2)]))

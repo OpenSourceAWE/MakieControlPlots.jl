@@ -20,6 +20,8 @@ For the original API and additional background, see the
 This package provides the following features:
 
 - simple plots can be created with the `plot()` function
+- the plots are interactive: buttons for pan and zoom, home and save are provided
+- plots can be saved in PNG or PDF format
 - an oscilloscope-like plot with multiple channels can be created
   with the `plotx()` function
 - an XY plot can be created with the `plotxy()` function

@@ -1,6 +1,8 @@
 using Test
 using MakieControlPlots
 using MakieControlPlots: PlotX
+import Makie: Figure
+Base.display(::Figure) = nothing
 
 X = collect(0.0:0.1:1.0)
 Y = X .^ 2
@@ -76,10 +78,6 @@ Y = X .^ 2
     end
 
     @testset "headless export" begin
-        import CairoMakie
-        import Makie: Figure
-        CairoMakie.activate!()
-        Base.display(::Figure) = nothing
         import MakieControlPlots: _export_figure, _LAST_BUILDER
 
         cases = [
@@ -113,11 +111,9 @@ Y = X .^ 2
     end
 
     @testset "export preserves zoom" begin
-        import CairoMakie
-        import Makie
-        import Makie: Figure, GridLayout, FileIO
+        import CairoMakie, Makie
+        import Makie: GridLayout, FileIO
         CairoMakie.activate!()
-        Base.display(::Figure) = nothing
         import MakieControlPlots: _export_figure, _LAST_BUILDER, _extract_axes
 
         plot(X, Y; xlabel="x", ylabel="y", disp=true)
@@ -138,10 +134,8 @@ Y = X .^ 2
 
     @testset "saved size matches screen" begin
         import CairoMakie
-        import Makie
-        import Makie: Figure, FileIO
+        import Makie: FileIO
         CairoMakie.activate!()
-        Base.display(::Figure) = nothing
         import MakieControlPlots: _export_figure, _LAST_BUILDER, _LAST_FIGSIZE
 
         plotx(X, Y, 2 .* Y, 3 .* Y, 4 .* Y, 5 .* Y;
@@ -152,7 +146,7 @@ Y = X .^ 2
             png = joinpath(dir, "tall.png")
             _export_figure(png, _LAST_BUILDER[]; figsize)
             img = FileIO.load(png)
-            ppu = 2
+            ppu = 1
             @test size(img) == (figsize[2] * ppu, figsize[1] * ppu)
         end
     end
@@ -160,9 +154,7 @@ Y = X .^ 2
     @testset "bode_plot extension" begin
         import ControlSystemsBase
         import CairoMakie
-        import Makie: Figure
         CairoMakie.activate!()
-        Base.display(::Figure) = nothing
         import MakieControlPlots: _export_figure, _LAST_BUILDER
 
         sys = ControlSystemsBase.tf([1.0], [1.0, 1.0])

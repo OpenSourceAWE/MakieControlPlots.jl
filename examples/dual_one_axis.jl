@@ -5,5 +5,5 @@ POS_Z = sin.(T)
 VEL_Z = 5*cos.(T)
 p = plot(T, [POS_Z, VEL_Z]; 
        xlabel="time [s]", ylabel="pos [m]", 
-       legendsize=24, labels=["pos_x", "vel_y"],
+       legendsize=18, labels=["pos_x", "vel_y"],
        fig="dual-one-axis", title="Dual plot")

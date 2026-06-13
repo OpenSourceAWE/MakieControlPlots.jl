@@ -198,9 +198,24 @@ using MakieControlPlots
 T = 0:0.05:2pi+0.1
 POS_Z = sin.(T)
 VEL_Z = 5*cos.(T)
-plot(T, POS_Z, VEL_Z; xlabel="time [s]",
-     ylabels=["pos_z [m]", "vel_z [m/s]"],
-     labels=["pos_z", "vel_z"], fig="dual-y-axis")
+CTRL = 0.1*sign.(5*cos.(T))
+p=plot(T, [POS_Z, CTRL], VEL_Z; 
+       xlabel="time [s]", ylabels=["pos_z [m]", "vel_z [m/s]"], legendsize=16, labels=["pos_z", "ctrl", "vel_z"],
+       fig="dual-y-axis-3", title="Dual y-axis, three plots")
+```
+
+<p align="center"><img src="./docs/dual-y-axis-3.png" width="400" /></p>
+
+Full function signature:
+
+```julia
+plot(X, Y1::AbstractVector{<:AbstractVector},
+     Y2::AbstractVector{<:Number};
+     xlabel="", ylabels=["", ""], title="", labels=["", ""],
+     xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
+     fig="", ysize=nothing, xsize=nothing, labelsize=20,
+     legend_position=:auto, output_folder="output", disp=false,
+     new_screen=true, legendsize=20, titlesize=20)
 ```
 
 ### Bode plot

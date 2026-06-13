@@ -7,10 +7,15 @@
 - `titlesize` keyword parameter to `plot`, `plotx`, `plotxy`, and `Base.display`.
 - `labelsize` keyword parameter to `plot2d`, applied to axis labels and the
   time annotation text.
+- Continuous integration workflow (`.github/workflows/CI.yml`).
+- Comprehensive README with usage documentation, badges, and example screenshots.
+- Documentation images for all example types.
 
 ### Changed
 - `PlotX` struct now stores `legendsize::Int` and `titlesize::Int` fields for
   persistence across save/load cycles.
+- Cleaned up test imports by hoisting common imports (`CairoMakie`, `Figure`,
+  `Base.display`) to the top-level `@testset` block.
 
 ## v0.1.1 09-06-2026
 

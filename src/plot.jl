@@ -1,7 +1,7 @@
 function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               output_folder="output", disp=false, new_screen=true,
-              titlesize=14)
+              titlesize=20)
     X = 1:length(Y)
     return plot(X, Y; xlabel, ylabel, title, fig, ysize, xsize, labelsize,
                 output_folder, disp, new_screen, titlesize)
@@ -11,7 +11,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               output_folder="output", disp=false, new_screen=true,
-              titlesize=14)
+              titlesize=20)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
@@ -48,7 +48,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
               ylims=nothing, ann=nothing, scatter=false, fig="",
               ysize=nothing, xsize=nothing, labelsize=20,
               legend_position=:auto, output_folder="output", disp=false,
-              new_screen=true, legendsize=20, titlesize=14)
+              new_screen=true, legendsize=20, titlesize=20)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
@@ -119,7 +119,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               legend_position=:auto, output_folder="output", disp=false,
-              new_screen=true, legendsize=20, titlesize=14)
+              new_screen=true, legendsize=20, titlesize=20)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
@@ -175,7 +175,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               legend_position=:auto, output_folder="output", disp=false,
-              new_screen=true, legendsize=20, titlesize=14)
+              new_screen=true, legendsize=20, titlesize=20)
     if length(Y1) == 1
         return plot(X, Y1[1], Y2; xlabel, ylabels, title, labels, xlims,
                     ylims, ann, scatter, fig, ysize, xsize, labelsize,

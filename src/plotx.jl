@@ -2,7 +2,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=20,
                legend_position=:auto, output_folder="output", yzoom=1.0,
-               disp=false, new_screen=true, legendsize=20, titlesize=14)
+               disp=false, new_screen=true, legendsize=20, titlesize=20)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,

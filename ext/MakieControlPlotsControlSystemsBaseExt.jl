@@ -46,7 +46,10 @@ function _bode_builder(bp::BodePlot)
                    xminorticksvisible=true,
                    xminorticks=IntervalsBetween(9),
                    yminorgridvisible=!bp.db, yminorticksvisible=!bp.db,
-                   yminorticks=IntervalsBetween(9))
+                   yminorticks=IntervalsBetween(9),
+                   title=bp.show_title ? bp.title : "",
+                   titlesize=bp.fontsize,
+                   titlefont=MakieControlPlots.TITLE_FONT)
         ax2 = Axis(layout[2, 1]; xscale=log10, xlabel=xlabel,
                    ylabel="Phase [deg]", xlabelsize=bp.fontsize,
                    ylabelsize=bp.fontsize, xgridvisible=true,
@@ -60,10 +63,6 @@ function _bode_builder(bp::BodePlot)
         linkxaxes!(ax1, ax2)
         hidexdecorations!(ax1; grid=false, ticks=false, minorgrid=false,
                           minorticks=false)
-        if bp.show_title && bp.title != ""
-            Label(layout[0, 1], bp.title; fontsize=bp.fontsize,
-                  tellwidth=false)
-        end
         return (; axes=[ax1, ax2])
     end
 end

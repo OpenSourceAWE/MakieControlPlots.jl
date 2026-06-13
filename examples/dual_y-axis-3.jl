@@ -5,5 +5,5 @@ POS_Z = sin.(T)
 VEL_Z = 5*cos.(T)
 CTRL = 0.1*sign.(5*cos.(T))
 p=plot(T, [POS_Z, CTRL], VEL_Z; 
-       xlabel="time [s]", ylabels=["pos_z [m]", "vel_z [m/s]"], labels=["pos_z", "ctrl", "vel_z"],
+       xlabel="time [s]", ylabels=["pos_z [m]", "vel_z [m/s]"], legendsize=16, labels=["pos_z", "ctrl", "vel_z"],
        fig="dual-y-axis-3", title="Dual y-axis, three plots")

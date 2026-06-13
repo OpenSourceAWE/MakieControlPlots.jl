@@ -1,5 +1,7 @@
 # MakieControlPlots
 
+[![CI](https://github.com/OpenSourceAWE/MakieControlPlots.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/OpenSourceAWE/MakieControlPlots.jl/actions/workflows/CI.yml)
+
 A reimplementation of the [ControlPlots.jl](https://github.com/aenarete/ControlPlots.jl)
 API on top of [Makie](https://docs.makie.org), instead of Matplotlib/PyPlot.
 The function names and keyword arguments match ControlPlots, so existing

@@ -228,6 +228,8 @@ P = tf([1.], [1., 1])
 bode_plot(P; from=-2, to=2, title="Low pass filter")
 ```
 
+<p align="center"><img src="./docs/bode.png" width="400" /></p>
+
 Full function signature:
 
 ```julia

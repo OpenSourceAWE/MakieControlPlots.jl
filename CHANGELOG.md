@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.1.2 13-06-2026
+
+### Added
+- `legendsize` keyword parameter to `plot`, `plotx`, `plotxy`, and `Base.display`.
+- `titlesize` keyword parameter to `plot`, `plotx`, `plotxy`, and `Base.display`.
+- `labelsize` keyword parameter to `plot2d`, applied to axis labels and the
+  time annotation text.
+
+### Changed
+- `PlotX` struct now stores `legendsize::Int` and `titlesize::Int` fields for
+  persistence across save/load cycles.
+
 ## v0.1.1 09-06-2026
 
 ### Added

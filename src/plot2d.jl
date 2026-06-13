@@ -32,10 +32,10 @@ function plot2d(pos::AbstractVector, reltime::Real=0.0; zoom=true, front=false,
                 segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
                 dpi=100, dz_zoom=1.5, dz=-5.0, dx=-16.0,
                 xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
-                new_screen=true)
+                new_screen=true, labelsize=20)
     return _plot2d_impl(pos, nothing, reltime; zoom, front, segments, fig,
                         figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
-                        output_folder, new_screen)
+                        output_folder, new_screen, labelsize)
 end
 
 function plot2d(pos::AbstractVector,
@@ -44,10 +44,10 @@ function plot2d(pos::AbstractVector,
                 segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
                 dpi=100, dz_zoom=1.5, dz=1.0, dx=1.0,
                 xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
-                new_screen=true)
+                new_screen=true, labelsize=20)
     return _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
                         figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
-                        output_folder, new_screen)
+                        output_folder, new_screen, labelsize)
 end
 
 function plot2d(pos_matrix::AbstractMatrix, reltime::Real=0.0;
@@ -61,7 +61,7 @@ end
 
 function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
                       figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
-                      output_folder="output", new_screen=true)
+                      output_folder="output", new_screen=true, labelsize=20)
     key = fig
 
     num_segs_needed = if !isnothing(seg)
@@ -161,7 +161,7 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
 
     if must_rebuild
         builder = function(layout)
-            return _plot2d_build_axes!(layout, state, front)
+            return _plot2d_build_axes!(layout, state, front, labelsize)
         end
         size_px = (round(Int, figsize[1] * dpi),
                    round(Int, figsize[2] * dpi))
@@ -174,9 +174,11 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
     return nothing
 end
 
-function _plot2d_build_axes!(layout, state::Plot2DState, front::Bool)
+function _plot2d_build_axes!(layout, state::Plot2DState, front::Bool,
+                              labelsize::Int=20)
     xlabel = front ? "y [m]" : "x [m]"
-    ax = Axis(layout[1, 1]; xlabel=xlabel, ylabel="z [m]")
+    ax = Axis(layout[1, 1]; xlabel=xlabel, ylabel="z [m]",
+              xlabelsize=labelsize, ylabelsize=labelsize)
     if front
         ax.xreversed = true
     end
@@ -193,7 +195,7 @@ function _plot2d_build_axes!(layout, state::Plot2DState, front::Bool)
     for seg_pts in state.segment_pts
         lines!(ax, seg_pts; linewidth=1)
     end
-    text!(ax, state.label_pos; text=state.label_text, fontsize=14,
+    text!(ax, state.label_pos; text=state.label_text, fontsize=labelsize,
           align=(:left, :bottom))
     return (; axes=[ax])
 end

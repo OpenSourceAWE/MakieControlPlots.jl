@@ -37,6 +37,10 @@ This package provides the following features:
 The goal of this package is to provide simple plots for control system
 developers and students.
 
+The GUI:
+
+<p align="center"><img src="./docs/gui.png" width="400" /></p>
+
 ## Installation
 
 ```julia

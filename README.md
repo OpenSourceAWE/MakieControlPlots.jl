@@ -28,7 +28,6 @@ This package provides the following features:
 - the `plot2d` function can create fast animations of particle systems,
   connected with segments
 - bode plots using the `bode_plot()` function
-- pan and zoom are supported (native Makie interaction)
 - LaTeX can be used for the labels
 - the parameters of the plot commands are stored in a struct and returned
 - this struct can be displayed again or stored in a file and loaded; the

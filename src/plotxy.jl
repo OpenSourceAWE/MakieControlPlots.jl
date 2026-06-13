@@ -11,17 +11,16 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
                       ylabel=string(ylabel), ylabelsize=ylsize,
-                      xlabelsize=xlsize)
+                      xlabelsize=xlsize,
+                      title=title,
+                      titlesize=titlesize,
+                      titlefont=TITLE_FONT)
             lines!(ax, X, Y)
             scatter && scatter!(ax, X, Y; color=:red, markersize=8)
             isnothing(xlims) || xlims!(ax, xlims[1], xlims[2])
             isnothing(ylims) || ylims!(ax, ylims[1], ylims[2])
             if !isnothing(ann)
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
-            end
-            if title != ""
-                Label(layout[0, 1], string(title); fontsize=titlesize,
-                      tellwidth=false)
             end
             return (; axes=[ax])
         end

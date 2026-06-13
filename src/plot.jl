@@ -20,7 +20,10 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
                       ylabel=string(ylabel), ylabelsize=ylsize,
-                      xlabelsize=xlsize)
+                      xlabelsize=xlsize,
+                      title=title,
+                      titlesize=titlesize,
+                      titlefont=TITLE_FONT)
             lines!(ax, X, Y)
             scatter && scatter!(ax, X, Y; color=:red, markersize=8)
             if isnothing(xlims)
@@ -31,10 +34,6 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
             isnothing(ylims) || ylims!(ax, ylims[1], ylims[2])
             if !isnothing(ann)
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
-            end
-            if title != ""
-                Label(layout[0, 1], string(title); fontsize=titlesize,
-                      tellwidth=false)
             end
             return (; axes=[ax])
         end
@@ -58,7 +57,10 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
                       ylabel=string(ylabel), ylabelsize=ylsize,
-                      xlabelsize=xlsize)
+                      xlabelsize=xlsize,
+                      title=title,
+                      titlesize=titlesize,
+                      titlefont=TITLE_FONT)
             any_label = false
             legend_yvecs = Vector{Float64}[]
             for (i, YT) in pairs(Ys)
@@ -103,10 +105,6 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
             any_label && axislegend(ax;
                 position=_resolve_corner(legend_position, X, legend_yvecs),
                 labelsize=legendsize)
-            if title != ""
-                Label(layout[0, 1], string(title); fontsize=titlesize,
-                      tellwidth=false)
-            end
             return (; axes=[ax])
         end
         _show_interactive(builder; fig_name=fig, output_folder, new_screen)
@@ -134,7 +132,10 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             ax1 = Axis(layout[1, 1]; xlabel=string(xlabel),
                        ylabel=string(ylabels[1]), ylabelsize=ylsize,
                        xlabelsize=xlsize,
-                       ylabelcolor=:green, yticklabelcolor=:green)
+                       ylabelcolor=:green, yticklabelcolor=:green,
+                       title=title,
+                       titlesize=titlesize,
+                       titlefont=TITLE_FONT)
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
                        ylabelsize=ylsize, ylabelcolor=:red,
                        yticklabelcolor=:red, yaxisposition=:right,
@@ -158,10 +159,6 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
                    tellwidth=false, tellheight=false, halign=leg_ha,
                    valign=leg_va, margin=(10, 10, 10, 10),
                    labelsize=legendsize)
-            if title != ""
-                Label(layout[0, 1], string(title); fontsize=titlesize,
-                      tellwidth=false)
-            end
             return (; axes=[ax1, ax2])
         end
         _show_interactive(builder; fig_name=fig, output_folder, new_screen)
@@ -194,7 +191,10 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
         builder = function(layout)
             ax1 = Axis(layout[1, 1]; xlabel=string(xlabel),
                        ylabel=string(ylabels[1]), ylabelsize=ylsize,
-                       xlabelsize=xlsize)
+                       xlabelsize=xlsize,
+                       title=title,
+                       titlesize=titlesize,
+                       titlefont=TITLE_FONT)
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
                        ylabelsize=ylsize, yaxisposition=:right,
                        backgroundcolor=RGBAf(0, 0, 0, 0))
@@ -221,10 +221,6 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
                    tellwidth=false, tellheight=false, halign=leg_ha,
                    valign=leg_va, margin=(10, 10, 10, 10),
                    labelsize=legendsize)
-            if title != ""
-                Label(layout[0, 1], string(title); fontsize=titlesize,
-                      tellwidth=false)
-            end
             return (; axes=[ax1, ax2])
         end
         _show_interactive(builder; fig_name=fig, output_folder, new_screen)

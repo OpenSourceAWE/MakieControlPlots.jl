@@ -15,7 +15,10 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
         builder = function(layout)
             axes_arr = Axis[]
             for (i, y) in pairs(Y)
-                ax = Axis(layout[i, 1]; ylabelsize=ylsize)
+                ax = Axis(layout[i, 1]; ylabelsize=ylsize,
+                          title=(i == 1) ? title : "",
+                          titlesize=titlesize,
+                          titlefont=TITLE_FONT)
                 if !isnothing(ylabels) && i <= length(ylabels)
                     ax.ylabel = string(ylabels[i])
                 end
@@ -68,10 +71,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 axes_arr[end].xlabel = string(xlabel)
                 axes_arr[end].xlabelsize = xlsize
             end
-            if title != ""
-                Label(layout[0, 1], string(title); fontsize=titlesize,
-                      tellwidth=false)
-            end
+            return (; axes=axes_arr)
             return (; axes=axes_arr)
         end
         _show_interactive(builder; figsize=size_px, fig_name=fig,

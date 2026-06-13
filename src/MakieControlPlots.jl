@@ -10,6 +10,8 @@ using LaTeXStrings
 
 export plot, plotx, plotxy, plot2d, save, load, savefig, bode_plot
 
+TITLE_FONT::String = "CMU Serif"
+
 function bode_plot end
 
 function __init__()

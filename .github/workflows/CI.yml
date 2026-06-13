@@ -24,7 +24,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb libgl1-mesa-glx libgl1-mesa-dri libglfw3
+          sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglfw3
 
       - uses: julia-actions/cache@v2
 

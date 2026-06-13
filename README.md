@@ -233,9 +233,10 @@ bode_plot(P; from=-2, to=2, title="Low pass filter")
 Full function signature:
 
 ```julia
-bode_plot(sys::Union{StateSpace, TransferFunction}; title="", from=-1, to=1,
-          fig="", db=true, hz=true, bw=false, linestyle=:solid,
-          show_title=true, fontsize=18, disp=false, new_screen=true)
+bode_plot(sys::Union{StateSpace, TransferFunction}; title="",
+          from=-1, to=1, fig="", db=true, hz=true, bw=false,
+          linestyle=:solid, show_title=true, fontsize=18,
+          output_folder="output", disp=false, new_screen=true)
 ```
 
 For using this function you need to do `using ControlSystemsBase` first, because
@@ -259,6 +260,10 @@ for t in 0:0.1:5
 end
 ```
 
+When the function is called at `t=0` the line, dot and text objects are created.
+Each time afterwards these objects are just moved/updated. Therefore the update
+is very fast and you can achieve a high frame rate.
+
 Full function signature:
 
 ```julia
@@ -267,19 +272,7 @@ plot2d(pos::AbstractVector, reltime::Real=0.0; zoom=true, front=false,
        dpi=100, dz_zoom=1.5, dz=-5.0, dx=-16.0,
        xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
        new_screen=true, labelsize=20)
-
-plot2d(pos::AbstractVector,
-        seg::AbstractVector{<:AbstractVector{<:Integer}},
-        reltime::Real=0.0; zoom=true, front=false,
-        segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
-        dpi=100, dz_zoom=1.5, dz=1.0, dx=1.0,
-        xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
-        new_screen=true, labelsize=20)
 ```
-
-When the function is called at `t=0` the line, dot and text objects are created.
-Each time afterwards these objects are just moved/updated. Therefore the update
-is very fast and you can achieve a high frame rate.
 
 ### 2D video with custom segments
 
@@ -308,6 +301,18 @@ end
 The `segments` parameter defines which points should be connected by lines,
 making it easy to create shapes and animations. Each segment is defined by a
 pair of indices referring to points in the `points` array.
+
+Full function signature:
+
+```
+plot2d(pos::AbstractVector,
+        seg::AbstractVector{<:AbstractVector{<:Integer}},
+        reltime::Real=0.0; zoom=true, front=false,
+        segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
+        dpi=100, dz_zoom=1.5, dz=1.0, dx=1.0,
+        xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
+        new_screen=true, labelsize=20)
+```
 
 ## Running the examples
 

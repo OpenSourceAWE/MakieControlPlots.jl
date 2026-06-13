@@ -2,12 +2,12 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=20,
                legend_position=:auto, output_folder="output", yzoom=1.0,
-               disp=false, new_screen=true)
+               disp=false, new_screen=true, legendsize=20)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
-                         legend_position)
+                         legend_position, legendsize)
     if disp
         n = length(Y)
         size_px = (round(Int, 8 * 96),
@@ -55,7 +55,8 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 end
                 xlims!(ax, first(X), last(X))
                 added_label && axislegend(ax;
-                    position=_resolve_corner(legend_position, X, ax_yvecs))
+                    position=_resolve_corner(legend_position, X, ax_yvecs),
+                    labelsize=legendsize)
             end
             if length(axes_arr) > 1
                 linkxaxes!(axes_arr...)

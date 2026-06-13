@@ -5,7 +5,7 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto)
+                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, 20)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),

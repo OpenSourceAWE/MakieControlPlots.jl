@@ -1,21 +1,21 @@
 function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               output_folder="output", disp=false, new_screen=true,
-              titlesize=20)
+              titlesize=20, legendsize=20)
     X = 1:length(Y)
     return plot(X, Y; xlabel, ylabel, title, fig, ysize, xsize, labelsize,
-                output_folder, disp, new_screen, titlesize)
+                output_folder, disp, new_screen, titlesize, legendsize)
 end
 
 function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=20,
               output_folder="output", disp=false, new_screen=true,
-              titlesize=20)
+              titlesize=20, legendsize=20)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, 20, titlesize)
+                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, legendsize, titlesize)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),

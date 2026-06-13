@@ -58,7 +58,7 @@ function Base.display(p::PlotX; new_screen=true)
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
              fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
-             titlesize=p.titlesize)
+             titlesize=p.titlesize, legendsize=p.legendsize)
     elseif p.type == 2
         plotx(p.X, p.Y...; xlabel=p.xlabel, ylabels=p.ylabels,
               title=p.title, labels=p.labels, xlims=p.xlims, ylims=p.ylims,
@@ -70,7 +70,7 @@ function Base.display(p::PlotX; new_screen=true)
         plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
                xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
                fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
-               titlesize=p.titlesize)
+               titlesize=p.titlesize, legendsize=p.legendsize)
     elseif p.type == 4
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,

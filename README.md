@@ -62,8 +62,8 @@ The package `LaTeXStrings` is only required if you want to use LaTeX for any of
 your labels like in the example above. You need to prefix LaTeX strings with the
 letter `L`.
 
-Display the
-plot by typing:
+You can now close the plot window.
+You can re-display the plot by typing:
 
 ```julia
 p
@@ -162,6 +162,8 @@ Y = cos.(3T)
 p = plotxy(X, Y; xlabel="X", ylabel="Y", fig="xy")
 ```
 
+<p align="center"><img src="./docs/xy-plot.png" width="400" /></p>
+
 Full function signature:
 
 ```julia
@@ -183,8 +185,10 @@ x   = 1.5*ones(11)
 y   = 1:0.1:2
 out = min.(x, y)
 plot(1:11, [x, y, out]; labels=["input_a", "input_b", "output"],
-     fig="2-in-one")
+     fig="2-in-one", legendsize=18)
 ```
+
+<p align="center"><img src="./docs/2-in-one.png" width="400" /></p>
 
 ### Dual y-axis
 

@@ -72,7 +72,6 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 axes_arr[end].xlabelsize = xlsize
             end
             return (; axes=axes_arr)
-            return (; axes=axes_arr)
         end
         _show_interactive(builder; figsize=size_px, fig_name=fig,
                           output_folder, new_screen)

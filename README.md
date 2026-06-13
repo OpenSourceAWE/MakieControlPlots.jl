@@ -54,11 +54,15 @@ Y = sin.(X)
 p = plot(X, Y; xlabel=L"\alpha = [0..2\pi]", ylabel="sin", fig="basic")
 ```
 
+A plot window like this should pop up:
+
+<p align="center"><img src="./docs/basic.png" width="400" /></p>
+
 The package `LaTeXStrings` is only required if you want to use LaTeX for any of
 your labels like in the example above. You need to prefix LaTeX strings with the
 letter `L`.
 
-Because `disp` defaults to `false`, the call returns the struct `p`. Display the
+Display the
 plot by typing:
 
 ```julia
@@ -82,9 +86,11 @@ p
 Full function signature:
 
 ```julia
-plot(X, Ys; xlabel="", ylabel="", title="", xlims=nothing, ylims=nothing,
-     ann=nothing, scatter=false, fig="", ysize=nothing, xsize=nothing,
-     labelsize=20, disp=false, new_screen=true)
+plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
+     xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
+     fig="", ysize=nothing, xsize=nothing, labelsize=20,
+     output_folder="output", disp=false, new_screen=true,
+     titlesize=20, legendsize=20)
 ```
 
 ### Multi-channel plot
@@ -93,10 +99,12 @@ plot(X, Ys; xlabel="", ylabel="", title="", xlims=nothing, ylims=nothing,
 using MakieControlPlots
 
 T = 0:0.1:2pi
-Y1 = sin.(T)
-Y2 = cos.(T)
-p = plotx(T, Y1, Y2; ylabels=["Y1", "Y2"], fig="dual")
+X = sin.(T)
+Y = cos.(T)
+p = plotx(T, X, Y; ylabels=["sin","cos"], fig="multi-channel", title="Two channels")
 ```
+
+<p align="center"><img src="./docs/multi-channel.png" width="400" /></p>
 
 Full function signature:
 
@@ -104,7 +112,8 @@ Full function signature:
 plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       xlims=nothing, ylims=nothing, ann=nothing, scatter=false, fig="",
       title="", ysize=nothing, xsize=nothing, labelsize=20,
-      legend_position=:auto, yzoom=1.0, disp=false, new_screen=true)
+      legend_position=:auto, output_folder="output", yzoom=1.0,
+      disp=false, new_screen=true, legendsize=20, titlesize=20)
 ```
 
 The optional parameter `ysize` can be used to change the size of the y-axis
@@ -117,18 +126,30 @@ plots. This is useful for combining set value and actual value of a signal in
 one plot.
 
 ```julia
-using MakieControlPlots
+using MakieControlPlots, LaTeXStrings
 
 T = 0:0.1:2pi
 Y1 = sin.(T)
 Y2 = 0.2*sin.(2T)
 Y = cos.(T)
-plotx(T, [Y1, Y2], Y; ylabels=["sin","cos"], labels=[["Y1","Y2"]],
-      fig="multi-channel-dual", title="multi-channel-dual")
+p = plotx(T, [Y1, Y2], Y; ylabels=["sin","cos"], labels=[[L"Y_1", L"Y_2"]], 
+         fig="multi-channel-dual", title="Multi-Channel Dual", titlesize=20, legendsize=18)
 ```
+
+<p align="center"><img src="./docs/multi-channel-dual.png" width="400" /></p>
 
 It is sufficient to pass one or more vectors of time series to `plotx`. In this
 case the labels have to be a vector of vectors.
+
+Full function signature:
+
+```julia
+plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
+      xlims=nothing, ylims=nothing, ann=nothing, scatter=false, fig="",
+      title="", ysize=nothing, xsize=nothing, labelsize=20,
+      legend_position=:auto, output_folder="output", yzoom=1.0,
+      disp=false, new_screen=true, legendsize=20, titlesize=20)
+```
 
 ### XY plot
 
@@ -139,6 +160,16 @@ T = 0:0.05:2pi+0.1
 X = sin.(T)
 Y = cos.(3T)
 p = plotxy(X, Y; xlabel="X", ylabel="Y", fig="xy")
+```
+
+Full function signature:
+
+```julia
+plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
+       ylims=nothing, ann=nothing, scatter=false, fig="",
+       ysize=nothing, xsize=nothing, labelsize=20,
+       output_folder="output", disp=false, new_screen=true,
+       titlesize=20, legendsize=20)
 ```
 
 ### n-in-one plot
@@ -205,6 +236,24 @@ for t in 0:0.1:5
     x0 += 0.1; z0 += 0.1
     sleep(0.1)
 end
+```
+
+Full function signature:
+
+```julia
+plot2d(pos::AbstractVector, reltime::Real=0.0; zoom=true, front=false,
+       segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
+       dpi=100, dz_zoom=1.5, dz=-5.0, dx=-16.0,
+       xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
+       new_screen=true, labelsize=20)
+
+plot2d(pos::AbstractVector,
+        seg::AbstractVector{<:AbstractVector{<:Integer}},
+        reltime::Real=0.0; zoom=true, front=false,
+        segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
+        dpi=100, dz_zoom=1.5, dz=1.0, dx=1.0,
+        xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
+        new_screen=true, labelsize=20)
 ```
 
 When the function is called at `t=0` the line, dot and text objects are created.

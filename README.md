@@ -1,6 +1,7 @@
 # MakieControlPlots
 
 [![CI](https://github.com/OpenSourceAWE/MakieControlPlots.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/OpenSourceAWE/MakieControlPlots.jl/actions/workflows/CI.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A reimplementation of the [ControlPlots.jl](https://github.com/aenarete/ControlPlots.jl)
 API on top of [Makie](https://docs.makie.org), instead of Matplotlib/PyPlot.

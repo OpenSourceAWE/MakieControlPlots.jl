@@ -473,11 +473,11 @@ end
 """
     close(fig_name::String)
 
-Close the figure with the given name. If `fig_name` is `"all"` or `"ALL"`,
-close all open figures.
+Close the figure with the given name. If `fig_name` is `"all"`, close all
+open figures (matching Matplotlib's `plt.close("all")` convention).
 """
 function close(fig_name::String)
-    if fig_name in ("all", "ALL")
+    if fig_name == "all"
         for (name, screen) in _SCREENS
             try
                 GLMakie.close(screen)

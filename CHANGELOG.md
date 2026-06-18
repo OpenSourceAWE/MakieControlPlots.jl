@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.1.3 18-06-2026
+
+### Added
+- `close(fig_name::String)` function to close specific figures by name, or
+  `close("all")` / `close("ALL")` to close all open figures.
+
+### Fixed
+- `plot2d` now correctly rebuilds the plot when the screen has been closed
+  externally, preventing errors on subsequent display calls.
+
 ## v0.1.2 13-06-2026
 
 ### Added

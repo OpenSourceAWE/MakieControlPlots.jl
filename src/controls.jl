@@ -470,6 +470,36 @@ function _prime_focus!(fig::Figure, screen)
     return nothing
 end
 
+"""
+    close(fig_name::String)
+
+Close the figure with the given name. If `fig_name` is `"all"` or `"ALL"`,
+close all open figures.
+"""
+function close(fig_name::String)
+    if fig_name in ("all", "ALL")
+        for (name, screen) in _SCREENS
+            try
+                GLMakie.close(screen)
+            catch
+            end
+        end
+        empty!(_SCREENS)
+        return nothing
+    end
+    screen = get(_SCREENS, fig_name, nothing)
+    if screen === nothing
+        @warn "Figure \"$fig_name\" not found. Open figures: $(collect(keys(_SCREENS)))"
+        return nothing
+    end
+    try
+        GLMakie.close(screen)
+    catch
+    end
+    delete!(_SCREENS, fig_name)
+    return nothing
+end
+
 function _display_figure(fig::Figure, fig_name::String, new_screen::Bool)
     if !(new_screen && Makie.current_backend() === GLMakie)
         return display(fig)

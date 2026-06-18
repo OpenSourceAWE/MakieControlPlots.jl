@@ -3,3 +3,4 @@ Manifest.toml
 *.jld2
 .DS_Store
 .claude
+output/basic.png

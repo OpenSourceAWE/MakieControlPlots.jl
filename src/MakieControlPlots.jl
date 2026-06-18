@@ -7,8 +7,9 @@ using Makie: RGBAf
 import JLD2
 using StaticArraysCore
 using LaTeXStrings
+import Base: close
 
-export plot, plotx, plotxy, plot2d, save, load, savefig, bode_plot
+export plot, plotx, plotxy, plot2d, save, load, savefig, bode_plot, close
 
 TITLE_FONT::String = "CMU Serif"
 

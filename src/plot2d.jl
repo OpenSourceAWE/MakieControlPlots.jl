@@ -75,7 +75,8 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
     state = get(_PLOT2D_STATES, key, nothing)
     must_rebuild = state === nothing ||
                    state.num_segs != num_segs_needed ||
-                   state.front != front
+                   state.front != front ||
+                   (state.screen !== nothing && !isopen(state.screen))
 
     if must_rebuild
         if state !== nothing && state.screen !== nothing

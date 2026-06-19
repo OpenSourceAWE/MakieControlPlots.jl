@@ -232,8 +232,10 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
             close(status_timer[])
         end
         is_long = text_px(msg, info_fontsize) > 1.5 * text_px(cursor_sample, info_fontsize)
-        if is_long && fits_right[]
-            GridLayoutBase.colsize!(grid, 1, Makie.Fixed(0))
+        if fits_right[]
+            GridLayoutBase.colsize!(grid, 1, is_long ? Makie.Fixed(0.0) : Makie.Auto())
+        else
+            GridLayoutBase.colsize!(grid, 1, Makie.Auto())
         end
         status_timer[] = Timer(3.0) do _
             status[] = ""

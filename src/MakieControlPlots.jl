@@ -210,13 +210,14 @@ function Base.display(p::PlotX; new_screen=true)
               ann=p.ann, scatter=p.scatter, fig=p.fig, ysize=p.ysize,
               xsize=p.xsize, legend_position=p.legend_position,
               yzoom=p.yzoom, legendsize=p.legendsize, disp=true, new_screen,
-              titlesize=p.titlesize, xscale=p.xscale, grid=p.grid)
+              titlesize=p.titlesize, xscale=p.xscale, grid=p.grid,
+              xticks=p.xticks)
     elseif p.type == 3
         plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
                xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
                fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
                titlesize=p.titlesize, legendsize=p.legendsize,
-               xscale=p.xscale, grid=p.grid)
+               xscale=p.xscale, grid=p.grid, xticks=p.xticks)
     elseif p.type == 4
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,

@@ -4,6 +4,7 @@ using GLMakie
 using CairoMakie
 using Makie
 using Makie: RGBAf
+using GridLayoutBase
 import JLD2
 using StaticArraysCore
 using LaTeXStrings

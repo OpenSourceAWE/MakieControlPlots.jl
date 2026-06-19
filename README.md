@@ -95,7 +95,7 @@ plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
      xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
      fig="", ysize=nothing, xsize=nothing, labelsize=16,
      output_folder="output", disp=false, new_screen=true,
-     titlesize=16, legendsize=16, xscale=:identity, grid=true,
+     titlesize=18, legendsize=16, xscale=:identity, grid=true,
      label="", xticks=nothing)
 ```
 
@@ -119,7 +119,7 @@ plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       xlims=nothing, ylims=nothing, ann=nothing, scatter=false, fig="",
       title="", ysize=nothing, xsize=nothing, labelsize=16,
       legend_position=:auto, output_folder="output", yzoom=1.0,
-      disp=false, new_screen=true, legendsize=16, titlesize=16,
+      disp=false, new_screen=true, legendsize=16, titlesize=18,
       xscale=:identity, grid=true)
 ```
 
@@ -179,7 +179,7 @@ plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
        ylims=nothing, ann=nothing, scatter=false, fig="",
        ysize=nothing, xsize=nothing, labelsize=16,
        output_folder="output", disp=false, new_screen=true,
-       titlesize=16, legendsize=16, xscale=:identity, grid=true)
+       titlesize=18, legendsize=16, xscale=:identity, grid=true)
 ```
 
 ### n-in-one plot
@@ -222,7 +222,7 @@ plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
      xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
      fig="", ysize=nothing, xsize=nothing, labelsize=16,
      legend_position=:auto, output_folder="output", disp=false,
-     new_screen=true, legendsize=16, titlesize=16, xscale=:identity,
+     new_screen=true, legendsize=16, titlesize=18, xscale=:identity,
      grid=true, label="", xticks=nothing)
 ```
 

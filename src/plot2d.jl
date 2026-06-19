@@ -9,11 +9,13 @@ mutable struct Plot2DState
     front::Bool
     num_segs::Int
     screen::Any
+    zoom::Bool
+    label_relative::Bool
 end
 
 const _PLOT2D_STATES = Dict{String, Plot2DState}()
 
-function _make_plot2d_state(num_segs::Int, front::Bool)
+function _make_plot2d_state(num_segs::Int, front::Bool, zoom::Bool, label_relative::Bool)
     return Plot2DState(
         Observable(Point2f[]),
         Observable(Point2f[]),
@@ -25,6 +27,8 @@ function _make_plot2d_state(num_segs::Int, front::Bool)
         front,
         num_segs,
         nothing,
+        zoom,
+        label_relative,
     )
 end
 
@@ -72,10 +76,14 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
         0
     end
 
+    label_relative = zoom && isnothing(xy)
+
     state = get(_PLOT2D_STATES, key, nothing)
     must_rebuild = state === nothing ||
                    state.num_segs != num_segs_needed ||
                    state.front != front ||
+                   state.zoom != zoom ||
+                   state.label_relative != label_relative ||
                    (state.screen !== nothing && !isopen(state.screen))
 
     if must_rebuild
@@ -85,7 +93,7 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
             catch
             end
         end
-        state = _make_plot2d_state(num_segs_needed, front)
+        state = _make_plot2d_state(num_segs_needed, front, zoom, label_relative)
         _PLOT2D_STATES[key] = state
     end
 
@@ -140,7 +148,7 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
 
     label_xy = if zoom
         if isnothing(xy)
-            (Float64(x_max), Float64(z_max + dz_zoom))
+            (0.02, 0.98)
         else
             (Float64(xy[1]), Float64(xy[2]))
         end
@@ -158,7 +166,9 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
         ly = max(min(label_xy[2], ly_hi - 1), ly_lo + 1)
         label_xy = (lx, ly)
     end
-    state.label_pos[] = Point2f(label_xy[1], label_xy[2])
+    if must_rebuild || !label_relative
+        state.label_pos[] = Point2f(label_xy[1], label_xy[2])
+    end
 
     if must_rebuild
         builder = function(layout)
@@ -197,6 +207,7 @@ function _plot2d_build_axes!(layout, state::Plot2DState, front::Bool,
         lines!(ax, seg_pts; linewidth=1)
     end
     text!(ax, state.label_pos; text=state.label_text, fontsize=labelsize,
-          align=(:left, :bottom))
+          align=(:left, :top),
+          space=state.label_relative ? :relative : :data)
     return (; axes=[ax])
 end

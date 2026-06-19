@@ -209,11 +209,8 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     text_px(str, sz) = length(str) * 0.6 * sz
     btns_px = sum(text_px(l, btn_fontsize) + 12 for l in btn_labels) +
               5 * 4 + 16
-    save_sample = "saved " * _path_string(output_folder, base, "pdf")
     cursor_sample = "x=-1.2346e+05  y=-1.2346e+05"
-    widest = length(save_sample) >= length(cursor_sample) ? save_sample :
-             cursor_sample
-    need_px = btns_px + 8 + text_px(widest, info_fontsize) + 12
+    need_px = btns_px + 8 + text_px(cursor_sample, info_fontsize) + 12
     fits_right = lift(events(fig).window_area) do area
         w = Makie.widths(area)[1]
         need_px <= (w <= 1 ? fig_width : w)

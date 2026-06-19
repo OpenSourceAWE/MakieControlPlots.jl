@@ -2,7 +2,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
                legend_position=:auto, output_folder="output", yzoom=1.0,
-               disp=false, new_screen=true, legendsize=16, titlesize=16,
+               disp=false, new_screen=true, legendsize=16, titlesize=18,
                xscale=:identity, grid=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize

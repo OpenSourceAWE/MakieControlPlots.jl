@@ -2,7 +2,7 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                 ylims=nothing, ann=nothing, scatter=false, fig="",
                 ysize=nothing, xsize=nothing, labelsize=16,
                 output_folder="output", disp=false, new_screen=true,
-                titlesize=16, legendsize=16, xscale=:identity, grid=true)
+                titlesize=18, legendsize=16, xscale=:identity, grid=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
@@ -29,7 +29,7 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
             end
             return (; axes=[ax])
         end
-        _show_interactive(builder; figsize=(576, 576), fig_name=fig,
+        _show_interactive(builder; figsize=(640, 576), fig_name=fig,
                           output_folder, new_screen)
     end
     return plotx_struct

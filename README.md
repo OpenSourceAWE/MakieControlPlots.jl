@@ -120,7 +120,7 @@ plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       title="", ysize=nothing, xsize=nothing, labelsize=16,
       legend_position=:auto, output_folder="output", yzoom=1.0,
       disp=false, new_screen=true, legendsize=16, titlesize=18,
-      xscale=:identity, grid=true)
+      xscale=:identity, grid=true, xticks=nothing)
 ```
 
 The optional parameter `ysize` can be used to change the size of the y-axis

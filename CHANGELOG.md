@@ -2,7 +2,18 @@
 
 ## v0.1.4 19-06-2026
 
+### Breaking (serialization)
+- **`PlotX` save/load now uses a versioned Dict format** instead of raw struct
+  serialization. Old `.jld2` files saved with v0.1.3 or earlier are still
+  readable via `load()`, but `save()` writes the new format. Use
+  `migrate_legacy_plotx_file(path)` to upgrade old files in-place.
+- `PlotX` struct gained `xscale`, `grid`, `label`, and `xticks` fields. The
+  Dict format ensures forwards/backwards compatibility for future field
+  additions.
+
 ### Added
+- `migrate_legacy_plotx_file(input_path; output_path=nothing)` — migrate old
+  `.jld2` files to the current versioned format.
 - `xticks` keyword parameter to `plot`, `plotx`, `plotxy`, and `Base.display`.
 - `xscale` keyword parameter (`:identity`, `:log10`, `:log2`, `:ln`) to `plot`,
   `plotx`, `plotxy`, and `Base.display`.
@@ -19,8 +30,6 @@
   reduced from 20 to 18.
 - `plot2d` time annotation uses relative coordinates (`space=:relative`) when
   zoomed, preventing the label from drifting off-screen.
-- `PlotX` struct now stores `xscale`, `grid`, `label`, and `xticks` fields
-  for save/load persistence.
 
 ### Fixed
 - XY plot window width increased from 576 to 640 px so the cursor coordinate

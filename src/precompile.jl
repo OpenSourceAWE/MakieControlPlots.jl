@@ -26,8 +26,8 @@ using PrecompileTools: @setup_workload, @compile_workload
         p = plot(X, Y; xlabel="x", ylabel="y", disp=false)
         mktempdir() do dir
             file = joinpath(dir, "p.jld2")
-            JLD2.save(file, "plot", p)
-            JLD2.load(file)
+            save(file, p)
+            load(file)
         end
 
         CairoMakie.activate!()

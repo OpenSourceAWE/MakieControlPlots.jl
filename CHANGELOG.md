@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## v0.1.4 19-06-2026
+
+### Added
+- `xticks` keyword parameter to `plot`, `plotx`, `plotxy`, and `Base.display`.
+- `xscale` keyword parameter (`:identity`, `:log10`, `:log2`, `:ln`) to `plot`,
+  `plotx`, `plotxy`, and `Base.display`.
+- `label` keyword parameter to `plot` — adds a legend entry for single-line
+  plots.
+- `grid` keyword parameter to `plot`, `plotx`, `plotxy`, and `Base.display` —
+  toggles grid line visibility.
+- `LINE_WIDTH` constant — applied consistently to all line plots.
+- `zoom` field to `Plot2DState` for proper plot rebuild detection when the
+  zoom flag changes.
+
+### Changed
+- Default `labelsize`, `titlesize`, and `legendsize` reduced from 20 to 16.
+- `plot2d` time annotation uses relative coordinates (`space=:relative`) when
+  zoomed, preventing the label from drifting off-screen.
+- `PlotX` struct now stores `xscale`, `grid`, `label`, and `xticks` fields
+  for save/load persistence.
+
+### Fixed
+- Label positions in `plot2d` — the time annotation is now anchored at a
+  stable relative position `(0.02, 0.98)` when zoomed without explicit `xy`.
+
+### Removed
+- Unused `save_sample` variable in `controls.jl`.
+
 ## v0.1.3 18-06-2026
 
 ### Added

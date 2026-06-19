@@ -1,13 +1,14 @@
 function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
-               fig="", title="", ysize=nothing, xsize=nothing, labelsize=20,
+               fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
                legend_position=:auto, output_folder="output", yzoom=1.0,
-               disp=false, new_screen=true, legendsize=20, titlesize=20)
+               disp=false, new_screen=true, legendsize=16, titlesize=16,
+               xscale=:identity, grid=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
-                         legend_position, legendsize, titlesize)
+                         legend_position, legendsize, titlesize, xscale, grid, "", nothing)
     if disp
         n = length(Y)
         size_px = (round(Int, 8 * 96),
@@ -18,7 +19,13 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 ax = Axis(layout[i, 1]; ylabelsize=ylsize,
                           title=(i == 1) ? title : "",
                           titlesize=titlesize,
-                          titlefont=TITLE_FONT)
+                          titlefont=TITLE_FONT,
+                          xscale=_xscale_func(xscale))
+                if xscale == :log10
+                    ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
+                end
+                ax.xgridvisible = grid
+                ax.ygridvisible = grid
                 if !isnothing(ylabels) && i <= length(ylabels)
                     ax.ylabel = string(ylabels[i])
                 end

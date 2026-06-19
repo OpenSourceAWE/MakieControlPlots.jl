@@ -1,20 +1,25 @@
 function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                 ylims=nothing, ann=nothing, scatter=false, fig="",
-                ysize=nothing, xsize=nothing, labelsize=20,
+                ysize=nothing, xsize=nothing, labelsize=16,
                 output_folder="output", disp=false, new_screen=true,
-                titlesize=20, legendsize=20)
+                titlesize=16, legendsize=16, xscale=:identity, grid=true)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize)
+                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", nothing)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
                       ylabel=string(ylabel), ylabelsize=ylsize,
-                      xlabelsize=xlsize,
+                      xlabelsize=xlsize, xscale=_xscale_func(xscale),
                       title=title,
                       titlesize=titlesize,
                       titlefont=TITLE_FONT)
+            if xscale == :log10
+                ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
+            end
+            ax.xgridvisible = grid
+            ax.ygridvisible = grid
             lines!(ax, X, Y)
             scatter && scatter!(ax, X, Y; color=:red, markersize=8)
             isnothing(xlims) || xlims!(ax, xlims[1], xlims[2])

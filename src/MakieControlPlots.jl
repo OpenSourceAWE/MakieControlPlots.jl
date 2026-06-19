@@ -15,6 +15,18 @@ TITLE_FONT::String = "CMU Serif"
 
 function bode_plot end
 
+function _xscale_func(xscale::Symbol)
+    if xscale == :log10
+        return log10
+    elseif xscale == :log2
+        return log2
+    elseif xscale == :ln
+        return log
+    else
+        return identity
+    end
+end
+
 function __init__()
     try
         GLMakie.activate!()
@@ -42,6 +54,10 @@ mutable struct PlotX
     legend_position
     legendsize::Int
     titlesize::Int
+    xscale::Symbol
+    grid::Bool
+    label::String
+    xticks
 end
 
 save(filename::String, p::PlotX) = JLD2.save(filename, "plot", p)
@@ -59,32 +75,36 @@ function Base.display(p::PlotX; new_screen=true)
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
              fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
-             titlesize=p.titlesize, legendsize=p.legendsize)
+             titlesize=p.titlesize, legendsize=p.legendsize,
+             xscale=p.xscale, grid=p.grid, label=p.label, xticks=p.xticks)
     elseif p.type == 2
         plotx(p.X, p.Y...; xlabel=p.xlabel, ylabels=p.ylabels,
               title=p.title, labels=p.labels, xlims=p.xlims, ylims=p.ylims,
               ann=p.ann, scatter=p.scatter, fig=p.fig, ysize=p.ysize,
               xsize=p.xsize, legend_position=p.legend_position,
               yzoom=p.yzoom, legendsize=p.legendsize, disp=true, new_screen,
-              titlesize=p.titlesize)
+              titlesize=p.titlesize, xscale=p.xscale, grid=p.grid)
     elseif p.type == 3
         plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
                xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
                fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
-               titlesize=p.titlesize, legendsize=p.legendsize)
+               titlesize=p.titlesize, legendsize=p.legendsize,
+               xscale=p.xscale, grid=p.grid)
     elseif p.type == 4
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,
              scatter=p.scatter, fig=p.fig, ysize=p.ysize, xsize=p.xsize,
              legend_position=p.legend_position, legendsize=p.legendsize,
-             disp=true, new_screen, titlesize=p.titlesize)
+             disp=true, new_screen, titlesize=p.titlesize,
+             xscale=p.xscale, grid=p.grid, label=p.label, xticks=p.xticks)
     elseif p.type == 5
         plot(p.X, p.Y[1], p.Y[2]; xlabel=p.xlabel, ylabels=p.ylabels,
              title=p.title, labels=p.labels, xlims=p.xlims, ylims=p.ylims,
              ann=p.ann, scatter=p.scatter, fig=p.fig, ysize=p.ysize,
              xsize=p.xsize, legend_position=p.legend_position,
              legendsize=p.legendsize, disp=true, new_screen,
-             titlesize=p.titlesize)
+             titlesize=p.titlesize, xscale=p.xscale, grid=p.grid,
+             label=p.label, xticks=p.xticks)
     end
     return nothing
 end

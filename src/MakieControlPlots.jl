@@ -12,6 +12,7 @@ import Base: close
 export plot, plotx, plotxy, plot2d, save, load, savefig, bode_plot, close
 
 TITLE_FONT::String = "CMU Serif"
+LINE_WIDTH::Float64 = 2
 
 function bode_plot end
 

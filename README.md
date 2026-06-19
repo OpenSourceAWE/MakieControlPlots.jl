@@ -93,9 +93,10 @@ Full function signature:
 ```julia
 plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
      xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
-     fig="", ysize=nothing, xsize=nothing, labelsize=20,
+     fig="", ysize=nothing, xsize=nothing, labelsize=16,
      output_folder="output", disp=false, new_screen=true,
-     titlesize=20, legendsize=20)
+     titlesize=16, legendsize=16, xscale=:identity, grid=true,
+     label="", xticks=nothing)
 ```
 
 ### Multi-channel plot
@@ -116,9 +117,10 @@ Full function signature:
 ```julia
 plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       xlims=nothing, ylims=nothing, ann=nothing, scatter=false, fig="",
-      title="", ysize=nothing, xsize=nothing, labelsize=20,
+      title="", ysize=nothing, xsize=nothing, labelsize=16,
       legend_position=:auto, output_folder="output", yzoom=1.0,
-      disp=false, new_screen=true, legendsize=20, titlesize=20)
+      disp=false, new_screen=true, legendsize=16, titlesize=16,
+      xscale=:identity, grid=true)
 ```
 
 The optional parameter `ysize` can be used to change the size of the y-axis
@@ -151,9 +153,10 @@ Full function signature:
 ```julia
 plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       xlims=nothing, ylims=nothing, ann=nothing, scatter=false, fig="",
-      title="", ysize=nothing, xsize=nothing, labelsize=20,
+      title="", ysize=nothing, xsize=nothing, labelsize=16,
       legend_position=:auto, output_folder="output", yzoom=1.0,
-      disp=false, new_screen=true, legendsize=20, titlesize=20)
+      disp=false, new_screen=true, legendsize=16, titlesize=16,
+      xscale=:identity, grid=true)
 ```
 
 ### XY plot
@@ -174,9 +177,9 @@ Full function signature:
 ```julia
 plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
        ylims=nothing, ann=nothing, scatter=false, fig="",
-       ysize=nothing, xsize=nothing, labelsize=20,
+       ysize=nothing, xsize=nothing, labelsize=16,
        output_folder="output", disp=false, new_screen=true,
-       titlesize=20, legendsize=20)
+       titlesize=16, legendsize=16, xscale=:identity, grid=true)
 ```
 
 ### n-in-one plot
@@ -214,13 +217,13 @@ p=plot(T, [POS_Z, CTRL], VEL_Z;
 Full function signature:
 
 ```julia
-plot(X, Y1::AbstractVector{<:AbstractVector},
-     Y2::AbstractVector{<:Number};
+plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
      xlabel="", ylabels=["", ""], title="", labels=["", ""],
      xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
-     fig="", ysize=nothing, xsize=nothing, labelsize=20,
+     fig="", ysize=nothing, xsize=nothing, labelsize=16,
      legend_position=:auto, output_folder="output", disp=false,
-     new_screen=true, legendsize=20, titlesize=20)
+     new_screen=true, legendsize=16, titlesize=16, xscale=:identity,
+     grid=true, label="", xticks=nothing)
 ```
 
 ### Bode plot
@@ -276,7 +279,7 @@ plot2d(pos::AbstractVector, reltime::Real=0.0; zoom=true, front=false,
        segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
        dpi=100, dz_zoom=1.5, dz=-5.0, dx=-16.0,
        xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
-       new_screen=true, labelsize=20)
+       new_screen=true, labelsize=16)
 ```
 
 ### 2D video with custom segments
@@ -309,14 +312,14 @@ pair of indices referring to points in the `points` array.
 
 Full function signature:
 
-```
+```julia
 plot2d(pos::AbstractVector,
         seg::AbstractVector{<:AbstractVector{<:Integer}},
         reltime::Real=0.0; zoom=true, front=false,
         segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
         dpi=100, dz_zoom=1.5, dz=1.0, dx=1.0,
         xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
-        new_screen=true, labelsize=20)
+        new_screen=true, labelsize=16)
 ```
 
 ## Running the examples

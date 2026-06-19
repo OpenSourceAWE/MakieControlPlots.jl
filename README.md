@@ -217,7 +217,7 @@ p=plot(T, [POS_Z, CTRL], VEL_Z;
 Full function signature:
 
 ```julia
-plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
+plot(X, Y1::AbstractVector{<:AbstractVector}, Y2::AbstractVector{<:Number};
      xlabel="", ylabels=["", ""], title="", labels=["", ""],
      xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
      fig="", ysize=nothing, xsize=nothing, labelsize=16,

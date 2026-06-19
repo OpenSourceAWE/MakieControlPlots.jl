@@ -279,7 +279,7 @@ plot2d(pos::AbstractVector, reltime::Real=0.0; zoom=true, front=false,
        segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
        dpi=100, dz_zoom=1.5, dz=-5.0, dx=-16.0,
        xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
-       new_screen=true, labelsize=16)
+       new_screen=true, labelsize=20)
 ```
 
 ### 2D video with custom segments
@@ -319,7 +319,7 @@ plot2d(pos::AbstractVector,
         segments::Integer=6, fig::String="", figsize=(6.4, 4.8),
         dpi=100, dz_zoom=1.5, dz=1.0, dx=1.0,
         xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
-        new_screen=true, labelsize=16)
+        new_screen=true, labelsize=20)
 ```
 
 ## Running the examples

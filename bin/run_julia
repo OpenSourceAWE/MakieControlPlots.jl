@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-julia --project -i -e 'function menu(); include("examples/menu.jl"); end' "$@"
+julia --project -i -e 'using Revise; function menu(); include("examples/menu.jl"); end' "$@"

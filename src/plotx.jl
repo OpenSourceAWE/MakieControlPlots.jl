@@ -1,13 +1,14 @@
 function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
-               fig="", title="", ysize=nothing, xsize=nothing, labelsize=20,
+               fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
                legend_position=:auto, output_folder="output", yzoom=1.0,
-               disp=false, new_screen=true, legendsize=20, titlesize=20)
+               disp=false, new_screen=true, legendsize=16, titlesize=18,
+               xscale=:identity, grid=true, xticks=nothing)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
-                         legend_position, legendsize, titlesize)
+                         legend_position, legendsize, titlesize, xscale, grid, "", xticks)
     if disp
         n = length(Y)
         size_px = (round(Int, 8 * 96),
@@ -18,7 +19,16 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 ax = Axis(layout[i, 1]; ylabelsize=ylsize,
                           title=(i == 1) ? title : "",
                           titlesize=titlesize,
-                          titlefont=TITLE_FONT)
+                          titlefont=TITLE_FONT,
+                          xscale=_xscale_func(xscale))
+                if xscale == :log10
+                    ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
+                end
+                if !isnothing(xticks)
+                    ax.xticks = xticks
+                end
+                ax.xgridvisible = grid
+                ax.ygridvisible = grid
                 if !isnothing(ylabels) && i <= length(ylabels)
                     ax.ylabel = string(ylabels[i])
                 end
@@ -37,20 +47,20 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                             l = string(lbl[j])
                         end
                         if l != ""
-                            lines!(ax, X, yy; label=l)
+                            lines!(ax, X, yy; linewidth=LINE_WIDTH, label=l)
                             added_label = true
                         else
-                            lines!(ax, X, yy)
+                            lines!(ax, X, yy; linewidth=LINE_WIDTH)
                         end
                         push!(ax_yvecs, Float64.(yy))
                     else
                         l = isnothing(lbl) ? "" :
                             (lbl isa AbstractVector ? "" : string(lbl))
                         if l != ""
-                            lines!(ax, X, y; label=l)
+                            lines!(ax, X, y; linewidth=LINE_WIDTH, label=l)
                             added_label = true
                         else
-                            lines!(ax, X, y)
+                            lines!(ax, X, y; linewidth=LINE_WIDTH)
                         end
                         push!(ax_yvecs, Float64.(y))
                         break

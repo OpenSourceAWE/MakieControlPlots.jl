@@ -209,11 +209,8 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     text_px(str, sz) = length(str) * 0.6 * sz
     btns_px = sum(text_px(l, btn_fontsize) + 12 for l in btn_labels) +
               5 * 4 + 16
-    save_sample = "saved " * _path_string(output_folder, base, "pdf")
     cursor_sample = "x=-1.2346e+05  y=-1.2346e+05"
-    widest = length(save_sample) >= length(cursor_sample) ? save_sample :
-             cursor_sample
-    need_px = btns_px + 8 + text_px(widest, info_fontsize) + 12
+    need_px = btns_px + 8 + text_px(cursor_sample, info_fontsize) + 12
     fits_right = lift(events(fig).window_area) do area
         w = Makie.widths(area)[1]
         need_px <= (w <= 1 ? fig_width : w)
@@ -234,8 +231,15 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
         if status_timer[] !== nothing
             close(status_timer[])
         end
+        is_long = text_px(msg, info_fontsize) > 1.5 * text_px(cursor_sample, info_fontsize)
+        if fits_right[]
+            GridLayoutBase.colsize!(grid, 1, is_long ? Makie.Fixed(0.0) : Makie.Auto())
+        else
+            GridLayoutBase.colsize!(grid, 1, Makie.Auto())
+        end
         status_timer[] = Timer(3.0) do _
             status[] = ""
+            GridLayoutBase.colsize!(grid, 1, Makie.Auto())
         end
     end
 

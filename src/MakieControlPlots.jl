@@ -63,7 +63,7 @@ mutable struct PlotX
 end
 
 # Serialization format version — bump when adding/removing fields
-const _PLOTX_SERIAL_VERSION = 2
+const _PLOTX_SERIAL_VERSION = 3
 
 # ── Migration-safe save/load ────────────────────────────────────────────────
 # Instead of raw struct serialization we use a versioned Dict.

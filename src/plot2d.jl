@@ -38,7 +38,7 @@ function plot2d(pos::AbstractVector, reltime::Real=0.0; zoom=true, front=false,
                 xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
                 new_screen=true, labelsize=20)
     return _plot2d_impl(pos, nothing, reltime; zoom, front, segments, fig,
-                        figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
+                        figsize, dpi, dz, dx, xlim, ylim, xy,
                         output_folder, new_screen, labelsize)
 end
 
@@ -50,7 +50,7 @@ function plot2d(pos::AbstractVector,
                 xlim=nothing, ylim=nothing, xy=nothing, output_folder="output",
                 new_screen=true, labelsize=20)
     return _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
-                        figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
+                        figsize, dpi, dz, dx, xlim, ylim, xy,
                         output_folder, new_screen, labelsize)
 end
 
@@ -64,7 +64,7 @@ function plot2d(pos_matrix::AbstractMatrix, reltime::Real=0.0;
 end
 
 function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
-                      figsize, dpi, dz_zoom, dz, dx, xlim, ylim, xy,
+                      figsize, dpi, dz, dx, xlim, ylim, xy,
                       output_folder="output", new_screen=true, labelsize=20)
     key = fig
 

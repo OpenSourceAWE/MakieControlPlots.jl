@@ -182,11 +182,12 @@ If `output_path` is `nothing` (default) the file is updated in-place.
 Returns `true` on success, `false` if the file is already up-to-date.
 """
 function migrate_legacy_plotx_file(input_path::String; output_path=nothing)
-    raw = JLD2.load(input_path)["plot"]
+    raw = JLD2.load(input_path; typemap=Dict(
+        "MakieControlPlots.PlotX" => JLD2.Upgrade(PlotX),
+    ))["plot"]
     raw isa Dict && return false   # already migrated
-    # Load via Upgrade and re-save in Dict format
     dest = something(output_path, input_path)
-    p = load(input_path)
+    p = _reconstruct_plotx(raw)    # raw is a legacy PlotX struct
     save(dest, p)
     return true
 end

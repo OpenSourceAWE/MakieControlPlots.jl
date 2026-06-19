@@ -187,8 +187,7 @@ function migrate_legacy_plotx_file(input_path::String; output_path=nothing)
     ))["plot"]
     raw isa Dict && return false   # already migrated
     dest = something(output_path, input_path)
-    p = _reconstruct_plotx(raw)    # raw is a legacy PlotX struct
-    save(dest, p)
+    save(dest, raw)                # raw is a PlotX (from Upgrade or direct)
     return true
 end
 

@@ -15,13 +15,16 @@
   zoom flag changes.
 
 ### Changed
-- Default `labelsize`, `titlesize`, and `legendsize` reduced from 20 to 16.
+- Default `labelsize` and `legendsize` reduced from 20 to 16; `titlesize`
+  reduced from 20 to 18.
 - `plot2d` time annotation uses relative coordinates (`space=:relative`) when
   zoomed, preventing the label from drifting off-screen.
 - `PlotX` struct now stores `xscale`, `grid`, `label`, and `xticks` fields
   for save/load persistence.
 
 ### Fixed
+- XY plot window width increased from 576 to 640 px so the cursor coordinate
+  label fits beside the buttons instead of wrapping to a second row.
 - Label positions in `plot2d` — the time annotation is now anchored at a
   stable relative position `(0.02, 0.98)` when zoomed without explicit `xy`.
 

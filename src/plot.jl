@@ -35,7 +35,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
             end
             ax.xgridvisible = grid
             ax.ygridvisible = grid
-            lines!(ax, X, Y; label=isempty(label) ? nothing : label)
+            lines!(ax, X, Y; linewidth=LINE_WIDTH, label=isempty(label) ? nothing : label)
             scatter && scatter!(ax, X, Y; color=:red, markersize=8)
             if isnothing(xlims)
                 xlims!(ax, first(X), last(X))
@@ -96,32 +96,32 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                     Y, Yerr = YT
                     if isnothing(Yerr)
                         if lbl != ""
-                            lines!(ax, X, Y; label=lbl); any_label = true
+                            lines!(ax, X, Y; linewidth=LINE_WIDTH, label=lbl); any_label = true
                         else
-                            lines!(ax, X, Y)
+                            lines!(ax, X, Y; linewidth=LINE_WIDTH)
                         end
                     else
                         errorbars!(ax, X, Y, Yerr; whiskerwidth=10)
                         if lbl != ""
-                            lines!(ax, X, Y; label=lbl); any_label = true
+                            lines!(ax, X, Y; linewidth=LINE_WIDTH, label=lbl); any_label = true
                         else
-                            lines!(ax, X, Y)
+                            lines!(ax, X, Y; linewidth=LINE_WIDTH)
                         end
                     end
                     scatter && scatter!(ax, X, Y; color=:red, markersize=8)
                 else
                     Y = YT
                     if lbl != ""
-                        lines!(ax, X, Y; label=lbl); any_label = true
+                        lines!(ax, X, Y; linewidth=LINE_WIDTH, label=lbl); any_label = true
                     else
-                        lines!(ax, X, Y)
+                        lines!(ax, X, Y; linewidth=LINE_WIDTH)
                     end
                     scatter && scatter!(ax, X, Y; color=:red, markersize=8)
                 end
                 push!(legend_yvecs, Float64.(Y))
             end
             if !isempty(label)
-                lines!(ax, X, Ys[1]; label=label)
+                lines!(ax, X, Ys[1]; linewidth=LINE_WIDTH, label=label)
                 any_label = true
             end
             isnothing(xlims) || xlims!(ax, xlims[1], xlims[2])
@@ -179,8 +179,8 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             hidespines!(ax2)
             hidexdecorations!(ax2)
             linkxaxes!(ax1, ax2)
-            l1 = lines!(ax1, X, Y1; color=:green)
-            l2 = lines!(ax2, X, Y2; color=:red)
+            l1 = lines!(ax1, X, Y1; linewidth=LINE_WIDTH, color=:green)
+            l2 = lines!(ax2, X, Y2; linewidth=LINE_WIDTH, color=:red)
             if scatter
                 scatter!(ax1, X, Y1; color=:red, markersize=8)
                 scatter!(ax2, X, Y2; color=:red, markersize=8)
@@ -244,13 +244,13 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             for (i, Y) in pairs(Y1)
                 c   = i <= length(colors) ? colors[i] : :black
                 lbl = i <= length(labels) ? string(labels[i]) : ""
-                ln  = lines!(ax1, X, Y; color=c)
+                ln  = lines!(ax1, X, Y; linewidth=LINE_WIDTH, color=c)
                 push!(lns, ln)
                 push!(leg_labels, lbl)
             end
             lbl2 = length(labels) >= length(Y1) + 1 ?
                    string(labels[end]) : ""
-            ln2  = lines!(ax2, X, Y2; color=:red)
+            ln2  = lines!(ax2, X, Y2; linewidth=LINE_WIDTH, color=:red)
             push!(lns, ln2)
             push!(leg_labels, lbl2)
             isnothing(xlims) || xlims!(ax1, xlims[1], xlims[2])

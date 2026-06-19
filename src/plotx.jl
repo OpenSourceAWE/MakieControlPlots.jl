@@ -44,20 +44,20 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                             l = string(lbl[j])
                         end
                         if l != ""
-                            lines!(ax, X, yy; label=l)
+                            lines!(ax, X, yy; linewidth=LINE_WIDTH, label=l)
                             added_label = true
                         else
-                            lines!(ax, X, yy)
+                            lines!(ax, X, yy; linewidth=LINE_WIDTH)
                         end
                         push!(ax_yvecs, Float64.(yy))
                     else
                         l = isnothing(lbl) ? "" :
                             (lbl isa AbstractVector ? "" : string(lbl))
                         if l != ""
-                            lines!(ax, X, y; label=l)
+                            lines!(ax, X, y; linewidth=LINE_WIDTH, label=l)
                             added_label = true
                         else
-                            lines!(ax, X, y)
+                            lines!(ax, X, y; linewidth=LINE_WIDTH)
                         end
                         push!(ax_yvecs, Float64.(y))
                         break

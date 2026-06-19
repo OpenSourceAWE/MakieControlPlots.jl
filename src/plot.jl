@@ -91,6 +91,8 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                 if !isnothing(labels) && i <= length(labels) &&
                    !isnothing(labels[i])
                     lbl = string(labels[i])
+                elseif i == 1 && !isempty(label)
+                    lbl = label
                 end
                 if YT isa Tuple
                     Y, Yerr = YT
@@ -119,10 +121,6 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                     scatter && scatter!(ax, X, Y; color=:red, markersize=8)
                 end
                 push!(legend_yvecs, Float64.(Y))
-            end
-            if !isempty(label)
-                lines!(ax, X, Ys[1]; linewidth=LINE_WIDTH, label=label)
-                any_label = true
             end
             isnothing(xlims) || xlims!(ax, xlims[1], xlims[2])
             isnothing(ylims) || ylims!(ax, ylims[1], ylims[2])
@@ -175,10 +173,19 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
                        ylabelsize=ylsize, ylabelcolor=:red,
                        yticklabelcolor=:red, yaxisposition=:right,
-                       backgroundcolor=RGBAf(0, 0, 0, 0))
+                       backgroundcolor=RGBAf(0, 0, 0, 0),
+                       xscale=_xscale_func(xscale))
+            if xscale == :log10
+                ax2.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
+            end
+            if !isnothing(xticks)
+                ax2.xticks = xticks
+            end
             hidespines!(ax2)
             hidexdecorations!(ax2)
             linkxaxes!(ax1, ax2)
+            ax2.xgridvisible = grid
+            ax2.ygridvisible = grid
             l1 = lines!(ax1, X, Y1; linewidth=LINE_WIDTH, color=:green)
             l2 = lines!(ax2, X, Y2; linewidth=LINE_WIDTH, color=:red)
             if scatter
@@ -228,16 +235,33 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
         builder = function(layout)
             ax1 = Axis(layout[1, 1]; xlabel=string(xlabel),
                        ylabel=string(ylabels[1]), ylabelsize=ylsize,
-                       xlabelsize=xlsize,
+                       xlabelsize=xlsize, xscale=_xscale_func(xscale),
                        title=title,
                        titlesize=titlesize,
                        titlefont=TITLE_FONT)
+            ax1.xgridvisible = grid
+            ax1.ygridvisible = grid
+            if xscale == :log10
+                ax1.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
+            end
+            if !isnothing(xticks)
+                ax1.xticks = xticks
+            end
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
                        ylabelsize=ylsize, yaxisposition=:right,
-                       backgroundcolor=RGBAf(0, 0, 0, 0))
+                       backgroundcolor=RGBAf(0, 0, 0, 0),
+                       xscale=_xscale_func(xscale))
+            if xscale == :log10
+                ax2.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
+            end
+            if !isnothing(xticks)
+                ax2.xticks = xticks
+            end
             hidespines!(ax2)
             hidexdecorations!(ax2)
             linkxaxes!(ax1, ax2)
+            ax2.xgridvisible = grid
+            ax2.ygridvisible = grid
             colors = [:green, :grey, :red]
             lns = Any[]
             leg_labels = String[]

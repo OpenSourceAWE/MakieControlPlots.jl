@@ -231,8 +231,13 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
         if status_timer[] !== nothing
             close(status_timer[])
         end
+        is_long = text_px(msg, info_fontsize) > 1.5 * text_px(cursor_sample, info_fontsize)
+        if is_long && fits_right[]
+            colwidth!(grid, 1, Makie.Fixed(0))
+        end
         status_timer[] = Timer(3.0) do _
             status[] = ""
+            colwidth!(grid, 1, Makie.Auto())
         end
     end
 

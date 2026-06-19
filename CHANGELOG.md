@@ -2,15 +2,6 @@
 
 ## v0.1.4 19-06-2026
 
-### Breaking (serialization)
-- **`PlotX` save/load now uses a versioned Dict format** instead of raw struct
-  serialization. Old `.jld2` files saved with v0.1.3 or earlier are still
-  readable via `load()`, but `save()` writes the new format. Use
-  `migrate_legacy_plotx_file(path)` to upgrade old files in-place.
-- `PlotX` struct gained `xscale`, `grid`, `label`, and `xticks` fields. The
-  Dict format ensures forwards/backwards compatibility for future field
-  additions.
-
 ### Added
 - `migrate_legacy_plotx_file(input_path; output_path=nothing)` — migrate old
   `.jld2` files to the current versioned format.
@@ -26,6 +17,12 @@
   zoom flag changes.
 
 ### Changed
+- **`PlotX` save/load now uses a versioned Dict format** instead of raw struct
+  serialization. Old `.jld2` files saved with v0.1.3 or earlier are still
+  readable via `load()`, but `save()` writes the new format. Use
+  `migrate_legacy_plotx_file(path)` to upgrade old files in-place.
+- `PlotX` struct gained `xscale`, `grid`, `label`, and `xticks` fields. The
+  Dict format ensures forwards/backwards compatibility for future field additions.
 - Default `labelsize` and `legendsize` reduced from 20 to 16; `titlesize`
   reduced from 20 to 18.
 - `plot2d` time annotation uses relative coordinates (`space=:relative`) when
@@ -36,6 +33,10 @@
   label fits beside the buttons instead of wrapping to a second row.
 - Label positions in `plot2d` — the time annotation is now anchored at a
   stable relative position `(0.02, 0.98)` when zoomed without explicit `xy`.
+- Long status messages (e.g. save paths wider than cursor text) now
+  temporarily collapse the button column via `colsize!` so the info label
+  doesn't overflow/wrap.
+- `GridLayoutBase` added as a direct dependency.
 
 ### Removed
 - Unused `save_sample` variable in `controls.jl`.

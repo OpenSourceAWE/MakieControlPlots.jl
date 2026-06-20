@@ -5,3 +5,4 @@ Manifest.toml
 .claude
 output/basic.png
 .JETLSConfig.toml
+output

@@ -1,6 +1,8 @@
 const _LAST_BUILDER = Ref{Any}(nothing)
 const _LAST_FIGSIZE = Ref{Any}(nothing)
 const _LAST_AXES = Ref{Any}(nothing)
+const _LAST_FIG = Ref{Any}(nothing)
+const _LAST_SCREEN = Ref{Any}(nothing)
 const _SCREENS = Dict{String, Any}()
 const _CONTROLS_HEIGHT = 40
 const _DEFAULT_PLOTSIZE = (640, 480)
@@ -537,7 +539,9 @@ function _show_interactive(builder; figsize=_DEFAULT_PLOTSIZE,
     _LAST_BUILDER[] = builder
     _LAST_FIGSIZE[] = figsize
     _LAST_AXES[] = axes_list
+    _LAST_FIG[] = fig
     screen = _display_figure(fig, fig_name, new_screen)
+    _LAST_SCREEN[] = screen
     _prime_focus!(fig, screen)
     return (fig, screen)
 end
@@ -554,4 +558,20 @@ function savefig(filename::String; output_folder="output")
     path = _export_figure(target, _LAST_BUILDER[], _LAST_AXES[]; figsize)
     @info "wrote $path"
     return path
+end
+
+"""
+    wait_for_figure()
+
+Block until the most recently shown interactive figure window is closed.
+Polls every 0.2 s to avoid busy-waiting.
+Useful in scripts that want to wait for user dismissal before continuing.
+"""
+function wait_for_figure()
+    isnothing(_LAST_SCREEN[]) && return nothing
+    isopen(_LAST_SCREEN[]) || return nothing
+    while isopen(_LAST_SCREEN[])
+        sleep(0.2)
+    end
+    return nothing
 end

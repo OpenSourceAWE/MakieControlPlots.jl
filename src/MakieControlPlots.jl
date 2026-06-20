@@ -11,7 +11,7 @@ using LaTeXStrings
 import Base: close
 
 export plot, plotx, plotxy, plot2d, save, load, savefig, bode_plot, close,
-       migrate_legacy_plotx_file
+       migrate_legacy_plotx_file, wait_for_figure
 
 TITLE_FONT::String = "CMU Serif"
 LINE_WIDTH::Float64 = 2

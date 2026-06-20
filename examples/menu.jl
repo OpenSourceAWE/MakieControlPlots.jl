@@ -22,7 +22,7 @@ options = ["basic = include(\"basic.jl\")",
            "plot_xy = include(\"plotxy.jl\")",
            "shifted = include(\"shifted.jl\")",
            "simple = include(\"simple.jl\")",
-           "wait_for_figure = include(\"wait_for_figure.jl\")",
+           "wait_for_figures = include(\"wait_for_figures.jl\")",
            "quit"]
 
 function example_menu()

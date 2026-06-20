@@ -11,6 +11,6 @@ p2 = plot(X, Y; fig="wait-example2", title="Close window to continue")
 display(p2)
 
 # Wait for the user to close the figure window before continuing
-wait_for_figure()
+wait_for_figures()
 
-println("Figure was closed. Continuing execution...")
+println("Figures were closed. Continuing execution...")

@@ -333,6 +333,14 @@ include("examples/menu.jl")
 
 Select an example with the `<UP>`/`<DOWN>` keys and press `<ENTER>` to run it.
 
+From any working directory, you can first copy the example scripts locally with:
+
+```julia
+using MakieControlPlots
+MakieControlPlots.install_examples()
+include("examples/menu.jl")
+```
+
 ## Utility functions
 
 ### `close(fig_name)`
@@ -365,4 +373,10 @@ display(p2)
 wait_for_figures()
 println("All figures closed.")
 ```
+
+### `install_examples(add_packages=true; overwrite=true)`
+
+Copy the package `examples/` scripts to a local `examples/` folder in your
+current working directory. If `add_packages` is `true`, it also installs
+`ControlSystemsBase` and `LaTeXStrings`, which are used by some examples.
 

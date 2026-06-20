@@ -280,4 +280,28 @@ Y = X .^ 2
             @test p2.ysize == 18
         end
     end
+
+    @testset "install_examples" begin
+        mktempdir() do dir
+            cd(dir) do
+                MakieControlPlots.install_examples(false)
+                @test isdir("examples")
+                @test isfile(joinpath("examples", "menu.jl"))
+                @test isfile(joinpath("examples", "basic.jl"))
+            end
+        end
+    end
+
+    @testset "install_examples overwrite=false keeps existing files" begin
+        mktempdir() do dir
+            cd(dir) do
+                mkdir("examples")
+                menu_file = joinpath("examples", "menu.jl")
+                write(menu_file, "sentinel")
+
+                MakieControlPlots.install_examples(false; overwrite=false)
+                @test read(menu_file, String) == "sentinel"
+            end
+        end
+    end
 end

@@ -5,6 +5,9 @@
 ### Added
 - `wait_for_figures()` — blocks execution until all interactive figure windows
   have been closed by the user. Polls every 0.2 s to avoid busy-waiting.
+- `install_examples(add_packages=true; overwrite=true)` — copies packaged
+  example scripts to the current working directory and can install optional
+  example dependencies (`ControlSystemsBase`, `LaTeXStrings`).
 - Example script `examples/wait_for_figures.jl` demonstrating interactive
   figures that wait for user dismissal.
 - `wait_for_figures` entry in the example menu.

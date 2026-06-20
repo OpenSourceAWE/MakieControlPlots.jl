@@ -6,12 +6,13 @@ using Makie
 using Makie: RGBAf
 using GridLayoutBase
 import JLD2
+using Pkg
 using StaticArraysCore
 using LaTeXStrings
 import Base: close
 
 export plot, plotx, plotxy, plot2d, save, load, savefig, bode_plot, close,
-       migrate_legacy_plotx_file, wait_for_figures
+    migrate_legacy_plotx_file, wait_for_figures, install_examples
 
 TITLE_FONT::String = "CMU Serif"
 LINE_WIDTH::Float64 = 2
@@ -189,6 +190,45 @@ function migrate_legacy_plotx_file(input_path::String; output_path=nothing)
     dest = something(output_path, input_path)
     save(dest, raw)                # raw is a PlotX (from Upgrade or direct)
     return true
+end
+
+function _copy_files(relpath::String, files; overwrite::Bool=true)
+    isdir(relpath) || mkdir(relpath)
+    src_path = joinpath(@__DIR__, "..", relpath)
+    for file in files
+        src = joinpath(src_path, file)
+        dst = joinpath(relpath, file)
+        if abspath(src) == abspath(dst)
+            continue
+        end
+        if overwrite || !isfile(dst)
+            cp(src, dst; force=true)
+        end
+    end
+    return nothing
+end
+
+function _copy_examples(; overwrite::Bool=true)
+    src_path = joinpath(@__DIR__, "..", "examples")
+    _copy_files("examples", readdir(src_path); overwrite)
+end
+
+"""
+    install_examples(add_packages=true; overwrite=true)
+
+Install example scripts into the current working directory.
+
+This function copies the package's `examples` scripts to a local `examples`
+folder. If `add_packages` is `true`, it also installs additional packages
+required by some examples (`ControlSystemsBase`, `LaTeXStrings`). If
+`overwrite` is `false`, existing files are kept.
+"""
+function install_examples(add_packages::Bool=true; overwrite::Bool=true)
+    _copy_examples(; overwrite)
+    if add_packages
+        Pkg.add(["ControlSystemsBase", "LaTeXStrings"])
+    end
+    return nothing
 end
 
 include("controls.jl")

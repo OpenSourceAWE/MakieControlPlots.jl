@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v0.1.5 20-06-2026
+
+### Added
+- `wait_for_figures()` — blocks execution until all interactive figure windows
+  have been closed by the user. Polls every 0.2 s to avoid busy-waiting.
+- Example script `examples/wait_for_figures.jl` demonstrating interactive
+  figures that wait for user dismissal.
+- `wait_for_figures` entry in the example menu.
+
+### Changed
+- README: updated install instructions from GitHub URL to registry package name
+  (`pkg"add MakieControlPlots"`), added documentation for `close()` and
+  `wait_for_figures()`.
+
+### Internal
+- Added `_LAST_FIG` and `_LAST_SCREEN` refs in `controls.jl` for tracking the
+  most recently displayed figure and its screen.
+
 ## v0.1.4 19-06-2026
 
 ### Added

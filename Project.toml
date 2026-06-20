@@ -1,7 +1,7 @@
 name = "MakieControlPlots"
 uuid = "6d616b69-6563-4f6e-8472-6f6c706c6f74"
 authors = ["Bart van de Lint <bart@vandelint.net>", "Uwe Fechner"]
-version = "0.1.4"
+version = "0.1.5"
 
 [workspace]
 projects = ["examples", "test"]

@@ -44,7 +44,7 @@ developers and students.
 
 ```julia
 using Pkg
-pkg"add https://github.com/aenarete/MakieControlPlots.jl"
+pkg"add MakieControlPlots"
 ```
 
 ## Usage

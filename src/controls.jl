@@ -561,17 +561,18 @@ function savefig(filename::String; output_folder="output")
 end
 
 """
-    wait_for_figure()
+    wait_for_figures()
 
-Block until the most recently shown interactive figure window is closed.
-Polls every 0.2 s to avoid busy-waiting.
-Useful in scripts that want to wait for user dismissal before continuing.
+Block until all interactive figure windows are closed. Polls every 0.2 s to
+avoid busy-waiting. Useful in scripts that want to wait for user dismissal
+before continuing.
 """
-function wait_for_figure()
-    isnothing(_LAST_SCREEN[]) && return nothing
-    isopen(_LAST_SCREEN[]) || return nothing
-    while isopen(_LAST_SCREEN[])
+function wait_for_figures()
+    while true
+        all_closed = all(values(_SCREENS)) do s
+            !isa(s, GLMakie.Screen) || !isopen(s)
+        end
+        all_closed && return nothing
         sleep(0.2)
     end
-    return nothing
 end

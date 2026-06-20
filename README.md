@@ -44,7 +44,7 @@ developers and students.
 
 ```julia
 using Pkg
-pkg"add https://github.com/aenarete/MakieControlPlots.jl"
+pkg"add MakieControlPlots"
 ```
 
 ## Usage
@@ -328,10 +328,41 @@ The `examples/` folder contains one script per plot type, plus a menu. From the
 package directory:
 
 ```julia
-using Pkg
-Pkg.activate("examples")
 include("examples/menu.jl")
-example_menu()
 ```
 
 Select an example with the `<UP>`/`<DOWN>` keys and press `<ENTER>` to run it.
+
+## Utility functions
+
+### `close(fig_name)`
+
+Close a figure window programmatically.
+
+```julia
+close("my_figure")   # close a specific figure by name
+close("all")         # close all open figure windows
+```
+
+### `wait_for_figures()`
+
+Block execution until all interactive figure windows have been closed by the
+user. Polls every 0.2 s to avoid busy-waiting. Useful in scripts that open
+figures and want to wait for the user to dismiss them before continuing.
+
+```julia
+using MakieControlPlots
+
+X = 0:0.1:2pi
+Y = sin.(X)
+
+p1 = plot(X, Y; fig="plot-1", title="First plot")
+display(p1)
+p2 = plot(X, Y; fig="plot-2", title="Second plot")
+display(p2)
+
+# Wait until both figure windows are closed
+wait_for_figures()
+println("All figures closed.")
+```
+

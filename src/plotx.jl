@@ -13,6 +13,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
         n = length(Y)
         size_px = (round(Int, 8 * 96),
                    max(240, round(Int, n * 2 * yzoom * 96)))
+        xscale_sym = xscale::Symbol
         builder = function(layout)
             axes_arr = Axis[]
             for (i, y) in pairs(Y)
@@ -21,7 +22,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                           titlesize=titlesize,
                           titlefont=TITLE_FONT,
                           xscale=_xscale_func(xscale))
-                if xscale == :log10
+                if (xscale_sym::Symbol) == :log10
                     ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
                 end
                 if !isnothing(xticks)

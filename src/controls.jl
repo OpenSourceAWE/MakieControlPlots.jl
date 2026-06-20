@@ -17,8 +17,8 @@ function _interp_line_y(p, x::Real)
         return nothing
     end
     (isempty(raw) || !(eltype(raw) <: Point)) && return nothing
-    xs = Float64.(first.(raw))
-    ys = Float64.(last.(raw))
+    xs = Vector{Float64}(first.(raw))
+    ys = Vector{Float64}(last.(raw))
     length(xs) < 2 && return nothing
     if !issorted(xs)
         ord = sortperm(xs)
@@ -26,7 +26,7 @@ function _interp_line_y(p, x::Real)
         ys = ys[ord]
     end
     (x < first(xs) || x > last(xs)) && return nothing
-    i = Int(searchsortedlast(xs, x))
+    i = searchsortedlast(xs, x)::Int
     i == length(xs) && return ys[end]
     x0, y0 = xs[i], ys[i]
     x1, y1 = xs[i+1], ys[i+1]
@@ -250,12 +250,11 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     end
     mode = Ref{Symbol}(:zoom)
     apply_mode! = function()
+        m = mode[]::Symbol
         for ax in axes_list
-            m = mode[]
             _set_interaction_active!(ax, :dragpan, m == :pan)
             _set_interaction_active!(ax, :rectanglezoom, false)
         end
-        m = mode[]
         pan_btn.buttoncolor[]  = m == :pan  ? active_color : inactive_color
         zoom_btn.buttoncolor[] = m == :zoom ? active_color : inactive_color
     end
@@ -356,10 +355,10 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     end
 
     on(events(fig).mousebutton) do event
-        event.button == Makie.Mouse.left || return
-        if event.action == Makie.Mouse.press
+        (event.button::Makie.Mouse.Button) == Makie.Mouse.left || return
+        if (event.action::Makie.Mouse.Action) == Makie.Mouse.press
             press_px[] = events(fig).mouseposition[]
-            if mode[] == :zoom
+            if (mode[]::Symbol) == :zoom
                 empty!(zoom_start)
                 for ax in axes_list
                     Makie.is_mouseinside(ax.scene) || continue
@@ -411,11 +410,11 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     end
 
     on(pan_btn.clicks) do _
-        mode[] = mode[] == :pan ? :none : :pan
+        mode[] = (mode[]::Symbol) == :pan ? :none : :pan
         apply_mode!()
     end
     on(zoom_btn.clicks) do _
-        mode[] = mode[] == :zoom ? :none : :zoom
+        mode[] = (mode[]::Symbol) == :zoom ? :none : :zoom
         apply_mode!()
     end
     on(home_btn.clicks) do _

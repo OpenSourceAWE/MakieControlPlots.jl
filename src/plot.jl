@@ -27,7 +27,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
                       title=title,
                       titlesize=titlesize,
                       titlefont=TITLE_FONT)
-            if xscale == :log10
+            if (xscale::Symbol) == :log10
                 ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end
             if !isnothing(xticks)
@@ -69,6 +69,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                          xlims, ylims, ann, scatter, fig, 4, xlsize,
                          legend_position, legendsize, titlesize, xscale, grid, label, xticks)
     if disp
+        xscale_sym = xscale::Symbol
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
                       ylabel=string(ylabel), ylabelsize=ylsize,
@@ -76,7 +77,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
                       title=title,
                       titlesize=titlesize,
                       titlefont=TITLE_FONT)
-            if xscale == :log10
+            if (xscale_sym::Symbol) == :log10
                 ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end
             if !isnothing(xticks)
@@ -150,6 +151,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
                          legend_position, legendsize, titlesize, xscale, grid, label, xticks)
     if disp
+        xscale_sym = xscale::Symbol
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
         corner = _resolve_corner(legend_position, X,
                                  [_normalize01(Y1), _normalize01(Y2)])
@@ -162,7 +164,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
                        title=title,
                        titlesize=titlesize,
                        titlefont=TITLE_FONT)
-            if xscale == :log10
+            if (xscale_sym::Symbol) == :log10
                 ax1.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end
             if !isnothing(xticks)
@@ -175,7 +177,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
                        yticklabelcolor=:red, yaxisposition=:right,
                        backgroundcolor=RGBAf(0, 0, 0, 0),
                        xscale=_xscale_func(xscale))
-            if xscale == :log10
+            if (xscale_sym::Symbol) == :log10
                 ax2.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end
             if !isnothing(xticks)
@@ -229,6 +231,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
                          legend_position, legendsize, titlesize, xscale, grid, label, xticks)
     if disp
+        xscale_sym = xscale::Symbol
         corner = _resolve_corner(legend_position, X,
                                  vcat(_normalize01.(Y1), [_normalize01(Y2)]))
         leg_ha, leg_va = _corner_align(corner)
@@ -241,7 +244,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
                        titlefont=TITLE_FONT)
             ax1.xgridvisible = grid
             ax1.ygridvisible = grid
-            if xscale == :log10
+            if (xscale_sym::Symbol) == :log10
                 ax1.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end
             if !isnothing(xticks)
@@ -251,7 +254,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
                        ylabelsize=ylsize, yaxisposition=:right,
                        backgroundcolor=RGBAf(0, 0, 0, 0),
                        xscale=_xscale_func(xscale))
-            if xscale == :log10
+            if (xscale_sym::Symbol) == :log10
                 ax2.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end
             if !isnothing(xticks)

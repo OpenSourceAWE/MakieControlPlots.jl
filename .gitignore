@@ -6,3 +6,4 @@ Manifest.toml
 output/basic.png
 .JETLSConfig.toml
 output
+.vscode/settings.json

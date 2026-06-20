@@ -9,6 +9,7 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", xticks)
     if disp
+        xscale_sym = xscale::Symbol
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
                       ylabel=string(ylabel), ylabelsize=ylsize,
@@ -16,7 +17,7 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                       title=title,
                       titlesize=titlesize,
                       titlefont=TITLE_FONT)
-            if xscale == :log10
+            if (xscale_sym::Symbol) == :log10
                 ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end
             if !isnothing(xticks)

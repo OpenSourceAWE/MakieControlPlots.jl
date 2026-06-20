@@ -1,0 +1,11 @@
+#!/bin/bash
+# SPDX-FileCopyrightText: 2025 Uwe Fechner
+# SPDX-License-Identifier: MIT
+
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+if [[ $(basename $(pwd)) == "bin" ]]; then
+    cd ..
+fi
+
+LOG_FILE="output/jetls_$(date +%Y%m%d_%H%M%S).log"
+jetls check --root=. src/ 2>&1 | tee "$LOG_FILE"

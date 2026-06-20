@@ -324,22 +324,26 @@ plot2d(pos::AbstractVector,
 
 ## Running the examples
 
-The `examples/` folder contains one script per plot type, plus a menu. From the
-package directory:
-
-```julia
-include("examples/menu.jl")
+If you use the main branch of this package, you can do:
+```bash
+mkdir test
+cd test
+julia --project=.
+```
+and then in Julia:
+```
+]add MakieControlPlots#main
 ```
 
-Select an example with the `<UP>`/`<DOWN>` keys and press `<ENTER>` to run it.
-
-From any working directory, you can first copy the example scripts locally with:
+Then you can do:
 
 ```julia
 using MakieControlPlots
 MakieControlPlots.install_examples()
 include("examples/menu.jl")
 ```
+
+Select an example with the `<UP>`/`<DOWN>` keys and press `<ENTER>` to run it.
 
 ## Utility functions
 

@@ -11,8 +11,8 @@ using StaticArraysCore
 using LaTeXStrings
 import Base: close
 
-export plot, plotx, plotxy, plot2d, save, load, savefig, bode_plot, close,
-    migrate_legacy_plotx_file, wait_for_figures, install_examples
+export bode_plot, close, install_examples, load, migrate_legacy_plotx_file,
+    plot, plot2d, plotx, plotxy, save, savefig, wait_for_figures
 
 TITLE_FONT::String = "CMU Serif"
 LINE_WIDTH::Float64 = 2

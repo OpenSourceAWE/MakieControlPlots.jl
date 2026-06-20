@@ -26,7 +26,7 @@ function _interp_line_y(p, x::Real)
         ys = ys[ord]
     end
     (x < first(xs) || x > last(xs)) && return nothing
-    i = searchsortedlast(xs, x)
+    i = Int(searchsortedlast(xs, x))
     i == length(xs) && return ys[end]
     x0, y0 = xs[i], ys[i]
     x1, y1 = xs[i+1], ys[i+1]
@@ -248,14 +248,16 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
     for ax in axes_list
         ax.panbutton[] = Makie.Mouse.left
     end
-    mode = Ref(:zoom)
+    mode = Ref{Symbol}(:zoom)
     apply_mode! = function()
         for ax in axes_list
-            _set_interaction_active!(ax, :dragpan, mode[] == :pan)
+            m = mode[]
+            _set_interaction_active!(ax, :dragpan, m == :pan)
             _set_interaction_active!(ax, :rectanglezoom, false)
         end
-        pan_btn.buttoncolor[]  = mode[] == :pan  ? active_color : inactive_color
-        zoom_btn.buttoncolor[] = mode[] == :zoom ? active_color : inactive_color
+        m = mode[]
+        pan_btn.buttoncolor[]  = m == :pan  ? active_color : inactive_color
+        zoom_btn.buttoncolor[] = m == :zoom ? active_color : inactive_color
     end
     apply_mode!()
 
@@ -484,7 +486,7 @@ open figures (matching Matplotlib's `plt.close("all")` convention).
 """
 function close(fig_name::String)
     if fig_name == "all"
-        for (name, screen) in _SCREENS
+        for (_, screen) in _SCREENS
             try
                 GLMakie.close(screen)
             catch
@@ -570,7 +572,8 @@ before continuing.
 function wait_for_figures()
     while true
         all_closed = all(values(_SCREENS)) do s
-            !isa(s, GLMakie.Screen) || !isopen(s)
+            isa(s, GLMakie.Screen) || return true
+            return isopen(s)::Bool ? false : true
         end
         all_closed && return nothing
         sleep(0.2)

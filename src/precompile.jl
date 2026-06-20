@@ -1,4 +1,4 @@
-using PrecompileTools: @setup_workload, @compile_workload
+using PrecompileTools: @compile_workload, @setup_workload
 
 @setup_workload begin
     X = collect(0.0:0.1:1.0)

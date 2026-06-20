@@ -2,7 +2,7 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                 ylims=nothing, ann=nothing, scatter=false, fig="",
                 ysize=nothing, xsize=nothing, labelsize=16,
                 output_folder="output", disp=false, new_screen=true,
-                titlesize=18, legendsize=16, xscale=:identity, grid=true,
+                titlesize=18, legendsize=16, xscale::Symbol=:identity, grid=true,
                 xticks=nothing)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize

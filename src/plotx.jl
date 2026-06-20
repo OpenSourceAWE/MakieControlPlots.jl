@@ -3,7 +3,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
                legend_position=:auto, output_folder="output", yzoom=1.0,
                disp=false, new_screen=true, legendsize=16, titlesize=18,
-               xscale=:identity, grid=true, xticks=nothing)
+               xscale::Symbol=:identity, grid=true, xticks=nothing)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,

@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
+
 julia --project -i -e 'using Revise; function menu(); include("examples/menu.jl"); end' "$@"

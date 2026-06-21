@@ -1,0 +1,10 @@
+formatter = "JuliaFormatter"
+
+[full_analysis]
+auto_instantiate = false            # boolean, default: true
+
+[diagnostic]
+all_files = false                   # boolean, default: true
+
+[inlay_hint.types]
+enabled = false  # Hide type hints; keep `end`-tag hints

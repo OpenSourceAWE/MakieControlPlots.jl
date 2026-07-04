@@ -32,6 +32,18 @@ using PrecompileTools: @compile_workload, @setup_workload
 
         CairoMakie.activate!()
         try
+            # Exercise the package's own rendering paths (disp=true with Cairo backend)
+            plot(Y; xlabel="x", ylabel="y", disp=true)
+            plot(X, Y; xlabel="x", ylabel="y", title="t", disp=true)
+            plot(X, Y; scatter=true, ann=(0.5, 0.5, "a"),
+                 xlims=(0, 1), ylims=(0, 1), disp=true)
+            plot(X, [Y, Y2]; labels=["a", "b"], disp=true)
+            plot(X, [(Y, Yerr)]; labels=["a"], disp=true)
+            plot(X, Y, Y2; ylabels=["a", "b"], disp=true)
+            plotx(X, Y, Y2; ylabels=["a", "b"], labels=["a", "b"], disp=true)
+            plotxy(X, Y; xlabel="x", ylabel="y", disp=true)
+            plotxy(X, Y; scatter=true, disp=true)
+
             fig = Figure(; size=(400, 300))
             layout = GridLayout(fig[1, 1])
             ax = Axis(layout[1, 1]; xlabel="x", ylabel="y")
@@ -73,6 +85,17 @@ using PrecompileTools: @compile_workload, @setup_workload
                 GLMakie.activate!()
             catch
             end
+        end
+
+        # Exercise GLMakie-specific rendering paths (some may fail headless,
+        # but the code is compiled and cached regardless)
+        try
+            plot(X, Y; xlabel="x", ylabel="y", title="t", disp=true)
+        catch
+        end
+        try
+            plot(X, [Y, Y2]; labels=["a", "b"], disp=true)
+        catch
         end
     end
 end

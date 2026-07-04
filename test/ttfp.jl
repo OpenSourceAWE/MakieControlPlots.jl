@@ -1,0 +1,11 @@
+#!/usr/bin/env julia
+
+# run this using:
+# time ./ttfp.jl
+
+import Pkg; Pkg.activate(@__DIR__)
+
+using MakieControlPlots
+p = plot(rand(3))
+display(p)
+

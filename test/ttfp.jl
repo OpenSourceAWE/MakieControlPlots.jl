@@ -9,3 +9,4 @@ using MakieControlPlots
 p = plot(rand(3))
 display(p)
 
+# on desktop: 5.32s

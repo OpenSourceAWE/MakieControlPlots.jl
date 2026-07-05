@@ -32,17 +32,19 @@ using PrecompileTools: @compile_workload, @setup_workload
 
         CairoMakie.activate!()
         try
-            # Exercise the package's own rendering paths (disp=true with Cairo backend)
-            plot(Y; xlabel="x", ylabel="y", disp=true)
-            plot(X, Y; xlabel="x", ylabel="y", title="t", disp=true)
+            # Exercise the package's own rendering paths (disp=false = no display,
+            # just struct construction; the raw Figure/Axis/Makie.save block below
+            # exercises CairoMakie's actual rendering)
+            plot(Y; xlabel="x", ylabel="y", disp=false)
+            plot(X, Y; xlabel="x", ylabel="y", title="t", disp=false)
             plot(X, Y; scatter=true, ann=(0.5, 0.5, "a"),
-                 xlims=(0, 1), ylims=(0, 1), disp=true)
-            plot(X, [Y, Y2]; labels=["a", "b"], disp=true)
-            plot(X, [(Y, Yerr)]; labels=["a"], disp=true)
-            plot(X, Y, Y2; ylabels=["a", "b"], disp=true)
-            plotx(X, Y, Y2; ylabels=["a", "b"], labels=["a", "b"], disp=true)
-            plotxy(X, Y; xlabel="x", ylabel="y", disp=true)
-            plotxy(X, Y; scatter=true, disp=true)
+                 xlims=(0, 1), ylims=(0, 1), disp=false)
+            plot(X, [Y, Y2]; labels=["a", "b"], disp=false)
+            plot(X, [(Y, Yerr)]; labels=["a"], disp=false)
+            plot(X, Y, Y2; ylabels=["a", "b"], disp=false)
+            plotx(X, Y, Y2; ylabels=["a", "b"], labels=["a", "b"], disp=false)
+            plotxy(X, Y; xlabel="x", ylabel="y", disp=false)
+            plotxy(X, Y; scatter=true, disp=false)
 
             fig = Figure(; size=(400, 300))
             layout = GridLayout(fig[1, 1])
@@ -97,5 +99,7 @@ using PrecompileTools: @compile_workload, @setup_workload
             plot(X, [Y, Y2]; labels=["a", "b"], disp=true)
         catch
         end
+        sleep(0.05)
+        close("all")
     end
 end

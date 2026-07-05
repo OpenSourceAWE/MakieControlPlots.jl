@@ -10,3 +10,4 @@ p = plot(rand(3))
 display(p)
 
 # on desktop: 5.32s
+# on laptop: 7.5s

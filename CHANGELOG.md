@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## v0.1.6 05-07-2026
+
+### Added
+- `plot(Y::AbstractMatrix)` and `plot(X, Y::AbstractMatrix)` — each column of
+  the matrix is plotted as a separate line. 
+- Extended precompile workload — all plotting functions (`plot`, `plotx`,
+  `plotxy`) are now exercised during precompilation, including GLMakie
+  rendering paths (wrapped in `try`/`catch` for headless environments).
+- Time-to-first-plot benchmark (`test/ttfp.jl`).
+- Developer tooling: JET analysis script (`bin/jetls`),
+  `.JETLSConfig.toml.default`, `.markdownlint.json`.
+
+### Changed
+- Type annotations added throughout (`xscale::Symbol`, `mode[]::Symbol`,
+  `event.button::Makie.Mouse.Button`, etc.) to eliminate method-overwrite
+  warnings from Julia's compiler.
+- Exports in `MakieControlPlots.jl` sorted alphabetically.
+- README: added full function signatures for the new `Matrix` methods.
+- Cleaned up obsolete `plan.md` and `testing.md` files.
+
 ## v0.1.5 20-06-2026
 
 ### Added

@@ -15,7 +15,7 @@ print_usage() {
     echo "  ./bin/release -h"
     echo
     echo "Extracts the top section of CHANGELOG.md as release notes and posts a"
-    echo "'@JuliaRegistrator register' comment on the commit via the GitHub API."
+    echo "'@JuliaRegistrator register' comment on the GitHub issue #2 via the GitHub API."
     echo "The commit must already be pushed to the remote."
 }
 
@@ -118,7 +118,7 @@ if [[ "$_assume_yes" != true ]]; then
     fi
 fi
 
-_url=$(gh api "repos/$_repo/commits/$_sha/comments" -f body="$_body" -q .html_url)
+_url=$(gh api "repos/$_repo/issues/2/comments" -f body="$_body" -q .html_url)
 
 echo
 echo "Posted: $_url"

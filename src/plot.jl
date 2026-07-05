@@ -9,6 +9,31 @@ function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
                 xscale, grid, label, xticks)
 end
 
+function plot(Y::AbstractMatrix{<:Number}; xlabel="", ylabel="", title="",
+              labels=nothing, fig="", ysize=nothing, xsize=nothing,
+              labelsize=16, output_folder="output", disp=false,
+              new_screen=true, titlesize=18, legendsize=16,
+              xscale::Symbol=:identity, grid=true, xticks=nothing)
+    X = 1:size(Y, 1)
+    Ys = [Y[:, j] for j in 1:size(Y, 2)]
+    return plot(X, Ys; xlabel, ylabel, title, labels, fig, ysize, xsize,
+                labelsize, output_folder, disp, new_screen, titlesize,
+                legendsize, xscale, grid, xticks)
+end
+
+function plot(X, Y::AbstractMatrix{<:Number}; xlabel="", ylabel="", title="",
+              labels=nothing, xlims=nothing, ylims=nothing, ann=nothing,
+              scatter=false, fig="", ysize=nothing, xsize=nothing,
+              labelsize=16, legend_position=:auto, output_folder="output",
+              disp=false, new_screen=true, legendsize=16, titlesize=18,
+              xscale::Symbol=:identity, grid=true, label="", xticks=nothing)
+    Ys = [Y[:, j] for j in 1:size(Y, 2)]
+    return plot(X, Ys; xlabel, ylabel, title, labels, xlims, ylims, ann,
+                scatter, fig, ysize, xsize, labelsize, legend_position,
+                output_folder, disp, new_screen, legendsize, titlesize,
+                xscale, grid, label, xticks)
+end
+
 function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
               fig="", ysize=nothing, xsize=nothing, labelsize=16,

@@ -26,6 +26,30 @@ Y = X .^ 2
         @test length(p.X) == length(Y)
     end
 
+    @testset "plot(Matrix)" begin
+        M = rand(10, 3)
+        p = plot(M; xlabel="x", ylabel="y", title="Matrix")
+        @test p isa PlotX
+        @test p.type == 4
+        @test length(p.Y) == 3
+        @test length(p.Y[1]) == 10
+        @test p.Y[1] == M[:, 1]
+        @test p.Y[2] == M[:, 2]
+        @test p.Y[3] == M[:, 3]
+    end
+
+    @testset "plot(X, Matrix)" begin
+        X = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        M = rand(10, 2)
+        p = plot(X, M; xlabel="x", ylabel="y", labels=["a", "b"])
+        @test p isa PlotX
+        @test p.type == 4
+        @test length(p.Y) == 2
+        @test p.X == X
+        @test p.Y[1] == M[:, 1]
+        @test p.Y[2] == M[:, 2]
+    end
+
     @testset "plot(X, Ys) multi" begin
         p = plot(X, [Y, 2 .* Y]; labels=["a", "b"])
         @test p isa PlotX
@@ -91,6 +115,8 @@ Y = X .^ 2
                        disp=true),
             () -> plotx(X, Y, 2 .* Y; ylabels=["a","b"], disp=true),
             () -> plotxy(Y, X; xlabel="X", ylabel="Y", disp=true),
+            () -> plot(rand(10, 2); title="Matrix", disp=true),
+            () -> plot([0.1, 0.2, 0.3], rand(3, 2); title="X+Matrix", disp=true),
         ]
         mktempdir() do dir
             for (i, mk) in enumerate(cases)

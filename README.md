@@ -88,7 +88,7 @@ p = load("plot.jld2")
 p
 ```
 
-Full function signature:
+Full function signatures:
 
 ```julia
 plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
@@ -97,6 +97,23 @@ plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
      output_folder="output", disp=false, new_screen=true,
      titlesize=18, legendsize=16, xscale=:identity, grid=true,
      label="", xticks=nothing)
+```
+
+Plot a matrix — each column is plotted as a separate line:
+
+```julia
+plot(Y::AbstractMatrix{<:Number}; xlabel="", ylabel="", title="",
+     labels=nothing, fig="", ysize=nothing, xsize=nothing,
+     labelsize=16, output_folder="output", disp=false,
+     new_screen=true, titlesize=18, legendsize=16,
+     xscale=:identity, grid=true, xticks=nothing)
+
+plot(X, Y::AbstractMatrix{<:Number}; xlabel="", ylabel="", title="",
+     labels=nothing, xlims=nothing, ylims=nothing, ann=nothing,
+     scatter=false, fig="", ysize=nothing, xsize=nothing,
+     labelsize=16, legend_position=:auto, output_folder="output",
+     disp=false, new_screen=true, legendsize=16, titlesize=18,
+     xscale=:identity, grid=true, label="", xticks=nothing)
 ```
 
 ### Multi-channel plot

@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.1.7 12-07-2026
+
+### Added
+- `plotxy(X, Y; ..., aspect=nothing)` — pass `aspect=:equal` to give the X and
+  Y axes equal scaling 
+
+### Changed
+- `PlotX` struct gained an `aspect` field 
+- README: documented the new `aspect` parameter for `plotxy`.
+
 ## v0.1.6 05-07-2026
 
 ### Added

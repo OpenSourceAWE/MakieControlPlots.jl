@@ -3,11 +3,11 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                 ysize=nothing, xsize=nothing, labelsize=16,
                 output_folder="output", disp=false, new_screen=true,
                 titlesize=18, legendsize=16, xscale::Symbol=:identity, grid=true,
-                xticks=nothing)
+                xticks=nothing, aspect::Union{Nothing, Symbol}=nothing)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", xticks)
+                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", xticks, aspect)
     if disp
         xscale_sym = xscale::Symbol
         builder = function(layout)
@@ -16,7 +16,8 @@ function plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
                       xlabelsize=xlsize, xscale=_xscale_func(xscale),
                       title=title,
                       titlesize=titlesize,
-                      titlefont=TITLE_FONT)
+                      titlefont=TITLE_FONT,
+                      aspect=aspect == :equal ? DataAspect() : nothing)
             if (xscale_sym::Symbol) == :log10
                 ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
             end

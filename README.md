@@ -196,8 +196,13 @@ plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
        ylims=nothing, ann=nothing, scatter=false, fig="",
        ysize=nothing, xsize=nothing, labelsize=16,
        output_folder="output", disp=false, new_screen=true,
-       titlesize=18, legendsize=16, xscale=:identity, grid=true, xticks=nothing)
+       titlesize=18, legendsize=16, xscale=:identity, grid=true, xticks=nothing,
+       aspect=nothing)
 ```
+
+Pass `aspect=:equal` to give the X and Y axes equal scaling (matplotlib's
+`ax.set_aspect("equal")`), useful for plotting paths where distances along X
+and Y must look the same.
 
 ### n-in-one plot
 

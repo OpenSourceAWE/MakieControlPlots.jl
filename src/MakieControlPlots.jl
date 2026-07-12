@@ -62,10 +62,11 @@ mutable struct PlotX
     grid::Bool
     label::String
     xticks
+    aspect::Union{Nothing, Symbol}
 end
 
 # Serialization format version — bump when adding/removing fields
-const _PLOTX_SERIAL_VERSION = 3
+const _PLOTX_SERIAL_VERSION = 4
 
 # ── Migration-safe save/load ────────────────────────────────────────────────
 # Instead of raw struct serialization we use a versioned Dict.
@@ -101,6 +102,7 @@ function save(filename::String, p::PlotX)
         :grid        => p.grid,
         :label       => p.label,
         :xticks      => p.xticks,
+        :aspect      => p.aspect,
     )
     JLD2.save(filename, "plot", data)
 end
@@ -135,6 +137,7 @@ function JLD2.rconvert(::Type{PlotX}, nt::NamedTuple)
         get(nt, :grid,                true),
         get(nt, :label,               ""),
         get(nt, :xticks,              nothing),
+        get(nt, :aspect,              nothing),
     )
 end
 
@@ -170,6 +173,7 @@ function _reconstruct_plotx(d::Dict)
         get(d, :grid,                true),
         get(d, :label,               ""),
         get(d, :xticks,              nothing),
+        get(d, :aspect,              nothing),
     )
 end
 
@@ -258,7 +262,7 @@ function Base.display(p::PlotX; new_screen=true)
                xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
                fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
                titlesize=p.titlesize, legendsize=p.legendsize,
-               xscale=p.xscale, grid=p.grid, xticks=p.xticks)
+               xscale=p.xscale, grid=p.grid, xticks=p.xticks, aspect=p.aspect)
     elseif p.type == 4
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,

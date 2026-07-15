@@ -1,5 +1,5 @@
 # load the jld2 file from the data folder and plot it
 using MakieControlPlots, LaTeXStrings
 
-p = load(joinpath(@__DIR__, "..", "data", "p_twist.jld2"))
+p = MakieControlPlots.load(joinpath(@__DIR__, "..", "data", "p_twist.jld2"))
 display(p)

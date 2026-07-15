@@ -16,34 +16,71 @@ function _channel_legend_labels(y, lbl)
     return out
 end
 
-# Actual pixel height Makie needs to render an axislegend with these labels,
-# measured on a throwaway CairoMakie figure (font metrics, not axis size,
-# drive this, so a tiny probe figure is enough).
-function _legend_content_height_px(labels_vec, legendsize)
+# Actual pixel height a channel's row needs to fit its axislegend without
+# overlapping the title band above or the x-axis ticks/label below, measured
+# on a throwaway CairoMakie figure built with the same title/xlabel/font
+# parameters as the real axis (font metrics and Makie's own layout solver
+# drive this, not a hand-tuned formula). Rows are laid out with Makie's
+# default Auto sizing (equal division of the figure height) rather than
+# Fixed sizes: Fixed rows do not leave room for a title's protrusion, which
+# then renders outside the figure canvas entirely.
+function _legend_row_height_px(labels_vec, legendsize, has_title, title_str,
+                               titlesize, has_xlabel, xlabel_str, xlsize)
     isempty(labels_vec) && return 0
     CairoMakie.activate!()
     h = try
-        fig = Figure(size=(200, 400))
-        ax = Axis(fig[1, 1])
+        fig = Figure(size=(200, 1000))
+        ax = Axis(fig[1, 1]; title=has_title ? title_str : "",
+                  titlesize=titlesize, titlefont=TITLE_FONT)
+        if has_xlabel
+            ax.xlabel = xlabel_str
+            ax.xlabelsize = xlsize
+        end
         for (i, l) in pairs(labels_vec)
             lines!(ax, [0.0, 1.0], [Float64(i), Float64(i) + 1]; label=l)
         end
-        leg = axislegend(ax; labelsize=legendsize)
+        leg = axislegend(ax; position=:rt, labelsize=legendsize)
         notify(fig.scene.viewport)
-        leg.layoutobservables.computedbbox[].widths[2]
+        prot = ax.layoutobservables.protrusions[]
+        content_h = leg.layoutobservables.computedbbox[].widths[2]
+        prot.top + content_h + prot.bottom
     finally
         GLMakie.activate!()
     end
     return round(Int, h)
 end
 
-# Extra pixels a row needs beyond the raw legend content height, to account
-# for the axis's own title band and top/bottom panel padding. Rows are laid
-# out with Makie's default Auto sizing (equal division of the figure height)
-# rather than Fixed sizes: Fixed rows do not leave room for a title's
-# protrusion, which then renders outside the figure canvas entirely.
-_legend_row_overhead(has_title::Bool, titlesize) =
-    (has_title ? titlesize + 20 : 0) + 20
+# `_show_interactive` lays the plot row out with Auto sizing alongside the
+# controls row it adds, so requesting `figsize` does not guarantee the axis
+# panel actually gets that many pixels: GridLayout can shrink the plot row
+# below the requested height, which shrinks the axis panel by the same
+# amount and lets a top-right-anchored legend (sized for the *requested*
+# panel height) overflow past the axis's own bottom edge — the legend isn't
+# clipped, it just extends below the x-axis line. That squeeze is pure
+# GridLayoutBase layout math, independent of the rendering backend, so it
+# can be measured cheaply and headlessly with CairoMakie by replicating
+# `_show_interactive`'s construction (same calls, same builder) without the
+# final display step. The measured shortfall is then added to the window
+# size actually requested, so Makie's own (unmodified) Auto sizing ends up
+# giving the plot row what it needs.
+function _predict_row1_deficit(builder, needed_total_h, target_h, window_w)
+    prev_backend = Makie.current_backend()
+    CairoMakie.activate!()
+    deficit = try
+        fig_probe = Figure(; size=(window_w, target_h + _CONTROLS_HEIGHT))
+        plot_grid = GridLayout(fig_probe[1, 1])
+        artifacts = builder(plot_grid)
+        axes_list = _extract_axes(artifacts)
+        _add_controls!(fig_probe, axes_list, builder, "__legend_probe__";
+                       figsize=(window_w, target_h))
+        row1 = fig_probe.layout.content[1].content
+        delivered = row1.layoutobservables.computedbbox[].widths[2]
+        max(0.0, needed_total_h - delivered)
+    finally
+        prev_backend === GLMakie && GLMakie.activate!()
+    end
+    return round(Int, deficit)
+end
 
 function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
@@ -59,15 +96,15 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
     if disp
         n = length(Y)
         base_row_h = round(Int, 2 * yzoom * 96)
+        needed_hs = Vector{Int}(undef, n)
         row_bumped = Vector{Bool}(undef, n)
         per_row_h = base_row_h
         for (i, y) in pairs(Y)
             lbl = (!isnothing(labels) && i <= length(labels)) ? labels[i] : nothing
-            content_h = _legend_content_height_px(_channel_legend_labels(y, lbl), legendsize)
-            needed_h = content_h > 0 ?
-                content_h + _legend_row_overhead(i == 1, titlesize) : 0
-            row_bumped[i] = needed_h > base_row_h
-            per_row_h = max(per_row_h, needed_h)
+            needed_hs[i] = _legend_row_height_px(_channel_legend_labels(y, lbl), legendsize,
+                i == 1, title, titlesize, i == n, xlabel, xlsize)
+            row_bumped[i] = needed_hs[i] > base_row_h
+            per_row_h = max(per_row_h, needed_hs[i])
         end
         size_px = (round(Int, 8 * 96), max(240, n * per_row_h))
         xscale_sym = xscale::Symbol
@@ -141,8 +178,22 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
             end
             return (; axes=axes_arr)
         end
-        _show_interactive(builder; figsize=size_px, fig_name=fig,
-                          output_folder, new_screen)
+        if any(>(0), needed_hs)
+            # The content each channel actually needs, at equal per-channel
+            # share (matching how plot_grid's inner rows divide space).
+            needed_total_h = n * per_row_h
+            deficit = _predict_row1_deficit(builder, needed_total_h, size_px[2], size_px[1])
+            display_px = (size_px[1], size_px[2] + deficit)
+            _show_interactive(builder; figsize=display_px, fig_name=fig,
+                              output_folder, new_screen)
+            # Exports have no competing controls row (see _export_figure), so
+            # they never suffer this squeeze — keep them at the precise
+            # content size rather than inheriting the padded window size.
+            _LAST_FIGSIZE[] = size_px
+        else
+            _show_interactive(builder; figsize=size_px, fig_name=fig,
+                              output_folder, new_screen)
+        end
     end
     return plotx_struct
 end

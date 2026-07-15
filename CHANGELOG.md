@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## v0.1.8 15-07-2026
+
+### Fixed
+- `plotx`: a channel's legend (e.g. many labeled lines, or a title/x-label
+  competing for space) could extend past that channel's own axis line,
+  overlapping the x-axis in the interactive window. The window now grows by
+  exactly the amount needed to keep every legend within its axis panel,
+  without padding channels that already fit.
+
+### Added
+- `examples/many_entries_with_title.jl` — a titled `plotx` channel with 1 to
+  6 legend entries, used to exercise the fix above.
+- `examples/show_example.jl` — loads and displays a saved `.jld2` plot from
+  the `data/` folder.
+- `CLAUDE.md` — guidance for AI coding agents working in this repository.
+
 ## v0.1.7 12-07-2026
 
 ### Added

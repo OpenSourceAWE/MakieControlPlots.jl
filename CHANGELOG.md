@@ -16,6 +16,11 @@
   the `data/` folder.
 - `CLAUDE.md` — guidance for AI coding agents working in this repository.
 
+### Changed
+- `bin/release`: now aborts if the working tree has uncommitted changes, or
+  if the current branch has commits not yet pushed to its upstream, instead
+  of only printing a warning.
+
 ## v0.1.7 12-07-2026
 
 ### Added

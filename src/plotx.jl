@@ -1,3 +1,50 @@
+# Labels a channel's legend would show, mirroring the labeling logic in the
+# builder loop below without actually drawing anything.
+function _channel_legend_labels(y, lbl)
+    isnothing(lbl) && return String[]
+    out = []
+    for (j, yy) in pairs(y)
+        if yy isa AbstractVector
+            l = (lbl isa AbstractVector && j <= length(lbl)) ? string(lbl[j]) : ""
+            l != "" && push!(out, l)
+        else
+            l = lbl isa AbstractVector ? "" : string(lbl)
+            l != "" && push!(out, l)
+            break
+        end
+    end
+    return out
+end
+
+# Actual pixel height Makie needs to render an axislegend with these labels,
+# measured on a throwaway CairoMakie figure (font metrics, not axis size,
+# drive this, so a tiny probe figure is enough).
+function _legend_content_height_px(labels_vec, legendsize)
+    isempty(labels_vec) && return 0
+    CairoMakie.activate!()
+    h = try
+        fig = Figure(size=(200, 400))
+        ax = Axis(fig[1, 1])
+        for (i, l) in pairs(labels_vec)
+            lines!(ax, [0.0, 1.0], [Float64(i), Float64(i) + 1]; label=l)
+        end
+        leg = axislegend(ax; labelsize=legendsize)
+        notify(fig.scene.viewport)
+        leg.layoutobservables.computedbbox[].widths[2]
+    finally
+        GLMakie.activate!()
+    end
+    return round(Int, h)
+end
+
+# Extra pixels a row needs beyond the raw legend content height, to account
+# for the axis's own title band and top/bottom panel padding. Rows are laid
+# out with Makie's default Auto sizing (equal division of the figure height)
+# rather than Fixed sizes: Fixed rows do not leave room for a title's
+# protrusion, which then renders outside the figure canvas entirely.
+_legend_row_overhead(has_title::Bool, titlesize) =
+    (has_title ? titlesize + 20 : 0) + 20
+
 function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
@@ -11,8 +58,18 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                          legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing)
     if disp
         n = length(Y)
-        size_px = (round(Int, 8 * 96),
-                   max(240, round(Int, n * 2 * yzoom * 96)))
+        base_row_h = round(Int, 2 * yzoom * 96)
+        row_bumped = Vector{Bool}(undef, n)
+        per_row_h = base_row_h
+        for (i, y) in pairs(Y)
+            lbl = (!isnothing(labels) && i <= length(labels)) ? labels[i] : nothing
+            content_h = _legend_content_height_px(_channel_legend_labels(y, lbl), legendsize)
+            needed_h = content_h > 0 ?
+                content_h + _legend_row_overhead(i == 1, titlesize) : 0
+            row_bumped[i] = needed_h > base_row_h
+            per_row_h = max(per_row_h, needed_h)
+        end
+        size_px = (round(Int, 8 * 96), max(240, n * per_row_h))
         xscale_sym = xscale::Symbol
         builder = function(layout)
             axes_arr = Axis[]
@@ -68,9 +125,9 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     end
                 end
                 xlims!(ax, first(X), last(X))
-                added_label && axislegend(ax;
-                    position=_resolve_corner(legend_position, X, ax_yvecs),
-                    labelsize=legendsize)
+                pos = (row_bumped[i] && legend_position === :auto) ? :rt :
+                      _resolve_corner(legend_position, X, ax_yvecs)
+                added_label && axislegend(ax; position=pos, labelsize=legendsize)
             end
             if length(axes_arr) > 1
                 linkxaxes!(axes_arr...)

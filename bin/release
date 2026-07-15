@@ -16,7 +16,8 @@ print_usage() {
     echo
     echo "Extracts the top section of CHANGELOG.md as release notes and posts a"
     echo "'@JuliaRegistrator register' comment on the GitHub issue #2 via the GitHub API."
-    echo "The commit must already be pushed to the remote."
+    echo "The working tree must be clean and the current branch fully pushed to its"
+    echo "upstream before this will run."
 }
 
 while [[ $# -gt 0 ]]; do
@@ -81,7 +82,21 @@ if [[ -z "$_sha" ]]; then
 fi
 
 if [[ -n "$(git status --porcelain)" ]]; then
-    echo "Warning: working tree has uncommitted changes." >&2
+    echo "Working tree has uncommitted changes. Commit or stash them first." >&2
+    exit 1
+fi
+
+_upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || {
+    echo "Current branch has no upstream tracking branch configured." >&2
+    exit 1
+}
+
+git fetch --quiet
+
+if [[ -n "$(git log "${_upstream}..HEAD" --oneline)" ]]; then
+    echo "Local branch has commits not pushed to $_upstream. Push them first:" >&2
+    echo "  git push" >&2
+    exit 1
 fi
 
 _repo=$(gh repo view --json nameWithOwner -q .nameWithOwner)

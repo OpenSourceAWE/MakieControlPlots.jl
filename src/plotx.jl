@@ -51,19 +51,22 @@ function _legend_row_height_px(labels_vec, legendsize, has_title, title_str,
 end
 
 # `_show_interactive` lays the plot row out with Auto sizing alongside the
-# controls row it adds, so requesting `figsize` does not guarantee the axis
-# panel actually gets that many pixels: GridLayout can shrink the plot row
-# below the requested height, which shrinks the axis panel by the same
-# amount and lets a top-right-anchored legend (sized for the *requested*
-# panel height) overflow past the axis's own bottom edge — the legend isn't
+# controls row it adds, so requesting `figsize` does not guarantee each
+# channel's axis panel actually gets the height `_legend_row_height_px`
+# assumed: GridLayout can shrink the plot row below the requested height,
+# and a top-right-anchored legend (sized for the *requested* panel height)
+# then overflows past the axis's own bottom edge — the legend isn't
 # clipped, it just extends below the x-axis line. That squeeze is pure
-# GridLayoutBase layout math, independent of the rendering backend, so it
-# can be measured cheaply and headlessly with CairoMakie by replicating
-# `_show_interactive`'s construction (same calls, same builder) without the
-# final display step. The measured shortfall is then added to the window
-# size actually requested, so Makie's own (unmodified) Auto sizing ends up
-# giving the plot row what it needs.
-function _predict_row1_deficit(builder, needed_total_h, target_h, window_w)
+# GridLayoutBase layout math, independent of the rendering backend, so the
+# actual overflow (if any) can be measured directly and cheaply with
+# CairoMakie by replicating `_show_interactive`'s construction (same calls,
+# same builder) without the final display step, then comparing each
+# channel's own axis-bottom against its legend-bottom — the exact geometric
+# condition that must hold, rather than an indirect proxy. Extra window
+# height is shared equally across the `n` stacked channels (matching how
+# plot_grid's inner rows divide space), so the worst channel's overflow
+# must be multiplied by `n` to fully close the gap.
+function _predict_row1_deficit(builder, target_h, window_w, n)
     prev_backend = Makie.current_backend()
     CairoMakie.activate!()
     deficit = try
@@ -73,13 +76,27 @@ function _predict_row1_deficit(builder, needed_total_h, target_h, window_w)
         axes_list = _extract_axes(artifacts)
         _add_controls!(fig_probe, axes_list, builder, "__legend_probe__";
                        figsize=(window_w, target_h))
-        row1 = fig_probe.layout.content[1].content
-        delivered = row1.layoutobservables.computedbbox[].widths[2]
-        max(0.0, needed_total_h - delivered)
+        legends = [p for p in fig_probe.content if p isa Legend]
+        max_overflow = 0.0
+        for ax in axes_list
+            ax_bbox = ax.layoutobservables.computedbbox[]
+            ax_top = ax_bbox.origin[2] + ax_bbox.widths[2]
+            isempty(legends) && continue
+            # Every channel gets its own axislegend anchored at the top of
+            # its axis, so its top edge sits closest to that axis's own top
+            # edge — the most reliable pairing when several channels (each
+            # sharing the same x-column) are stacked vertically.
+            leg = argmin(l -> abs((l.layoutobservables.computedbbox[].origin[2] +
+                                   l.layoutobservables.computedbbox[].widths[2]) - ax_top),
+                        legends)
+            leg_bottom = leg.layoutobservables.computedbbox[].origin[2]
+            max_overflow = max(max_overflow, ax_bbox.origin[2] - leg_bottom)
+        end
+        max_overflow * n
     finally
         prev_backend === GLMakie && GLMakie.activate!()
     end
-    return round(Int, deficit)
+    return ceil(Int, deficit)
 end
 
 function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
@@ -179,10 +196,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
             return (; axes=axes_arr)
         end
         if any(>(0), needed_hs)
-            # The content each channel actually needs, at equal per-channel
-            # share (matching how plot_grid's inner rows divide space).
-            needed_total_h = n * per_row_h
-            deficit = _predict_row1_deficit(builder, needed_total_h, size_px[2], size_px[1])
+            deficit = _predict_row1_deficit(builder, size_px[2], size_px[1], n)
             display_px = (size_px[1], size_px[2] + deficit)
             _show_interactive(builder; figsize=display_px, fig_name=fig,
                               output_folder, new_screen)

@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.1.9 17-07-2026
+
+### Added
+- `plotxy(Xs::AbstractVector{<:AbstractVector}, Ys::AbstractVector{<:AbstractVector}; ...)` —
+  plot multiple XY series in one plot. Each element of `Xs` and `Ys` is a
+  separate series; the optional `legend` keyword provides per-series labels.
+- `linestyle` keyword to `plotxy` — sets the line style (e.g. `:solid`,
+  `:dash`, `:dot`). Accepts a single style for all series or a vector of
+  styles, one per series.
+
 ## v0.1.8 15-07-2026
 
 ### Fixed

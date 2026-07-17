@@ -77,18 +77,29 @@ function _predict_row1_deficit(builder, target_h, window_w, n)
         _add_controls!(fig_probe, axes_list, builder, "__legend_probe__";
                        figsize=(window_w, target_h))
         legends = [p for p in fig_probe.content if p isa Legend]
+        # Row bands, top to bottom: axes_list is already ordered top-to-bottom
+        # (row 1, row 2, ...), so row i spans from the next row's top edge
+        # down to this row's own top edge.
+        ax_tops = [(bb = ax.layoutobservables.computedbbox[]; bb.origin[2] + bb.widths[2])
+                   for ax in axes_list]
         max_overflow = 0.0
-        for ax in axes_list
-            ax_bbox = ax.layoutobservables.computedbbox[]
-            ax_top = ax_bbox.origin[2] + ax_bbox.widths[2]
+        for (i, ax) in pairs(axes_list)
             isempty(legends) && continue
-            # Every channel gets its own axislegend anchored at the top of
-            # its axis, so its top edge sits closest to that axis's own top
-            # edge — the most reliable pairing when several channels (each
-            # sharing the same x-column) are stacked vertically.
-            leg = argmin(l -> abs((l.layoutobservables.computedbbox[].origin[2] +
-                                   l.layoutobservables.computedbbox[].widths[2]) - ax_top),
-                        legends)
+            ax_bbox = ax.layoutobservables.computedbbox[]
+            ax_top = ax_tops[i]
+            row_bottom = i < length(axes_list) ? ax_tops[i + 1] : -Inf
+            # Only a channel that actually got its own axislegend (anchored
+            # at the top of its axis) has a legend whose top edge falls
+            # inside this row's band; matching every axis to the nearest
+            # legend overall — even one that belongs to a different,
+            # legend-less-neighbor row — produced bogus, huge "overflow"
+            # values for rows without a legend of their own.
+            owned = filter(legends) do l
+                leg_top = (lb = l.layoutobservables.computedbbox[]; lb.origin[2] + lb.widths[2])
+                row_bottom < leg_top <= ax_top
+            end
+            isempty(owned) && continue
+            leg = only(owned)
             leg_bottom = leg.layoutobservables.computedbbox[].origin[2]
             max_overflow = max(max_overflow, ax_bbox.origin[2] - leg_bottom)
         end

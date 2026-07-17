@@ -10,6 +10,9 @@
   `:dash`, `:dot`). Accepts a single style for all series or a vector of
   styles, one per series.
 
+### Fixed
+- `plotx`: the aspect ratio of saved plots could be wrong
+
 ## v0.1.8 15-07-2026
 
 ### Fixed

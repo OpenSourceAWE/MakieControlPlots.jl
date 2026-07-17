@@ -1,6 +1,7 @@
 Manifest.toml
 *.pdf
 *.jld2
+!data/dynamic_sinus_test_heading_tracking.jld2
 .DS_Store
 .claude
 output/basic.png

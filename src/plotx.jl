@@ -109,7 +109,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, nothing)
     if disp
         n = length(Y)
         base_row_h = round(Int, 2 * yzoom * 96)

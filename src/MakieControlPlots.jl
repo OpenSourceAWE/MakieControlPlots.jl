@@ -63,10 +63,11 @@ mutable struct PlotX
     label::String
     xticks
     aspect::Union{Nothing, Symbol}
+    linestyle
 end
 
 # Serialization format version — bump when adding/removing fields
-const _PLOTX_SERIAL_VERSION = 4
+const _PLOTX_SERIAL_VERSION = 5
 
 # ── Migration-safe save/load ────────────────────────────────────────────────
 # Instead of raw struct serialization we use a versioned Dict.
@@ -103,6 +104,7 @@ function save(filename::String, p::PlotX)
         :label       => p.label,
         :xticks      => p.xticks,
         :aspect      => p.aspect,
+        :linestyle   => p.linestyle,
     )
     JLD2.save(filename, "plot", data)
 end
@@ -138,6 +140,7 @@ function JLD2.rconvert(::Type{PlotX}, nt::NamedTuple)
         get(nt, :label,               ""),
         get(nt, :xticks,              nothing),
         get(nt, :aspect,              nothing),
+        get(nt, :linestyle,           nothing),
     )
 end
 
@@ -174,6 +177,7 @@ function _reconstruct_plotx(d::Dict)
         get(d, :label,               ""),
         get(d, :xticks,              nothing),
         get(d, :aspect,              nothing),
+        get(d, :linestyle,           nothing),
     )
 end
 
@@ -258,11 +262,21 @@ function Base.display(p::PlotX; new_screen=true)
               titlesize=p.titlesize, xscale=p.xscale, grid=p.grid,
               xticks=p.xticks)
     elseif p.type == 3
-        plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
-               xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
-               fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
-               titlesize=p.titlesize, legendsize=p.legendsize,
-               xscale=p.xscale, grid=p.grid, xticks=p.xticks, aspect=p.aspect)
+        if p.X isa AbstractVector{<:AbstractVector}
+            plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
+                   xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
+                   fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
+                   titlesize=p.titlesize, legendsize=p.legendsize,
+                   xscale=p.xscale, grid=p.grid, xticks=p.xticks, aspect=p.aspect,
+                   legend=p.labels, linestyle=p.linestyle)
+        else
+            plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
+                   xlims=p.xlims, ylims=p.ylims, ann=p.ann, scatter=p.scatter,
+                   fig=p.fig, ysize=p.ysize, xsize=p.xsize, disp=true, new_screen,
+                   titlesize=p.titlesize, legendsize=p.legendsize,
+                   xscale=p.xscale, grid=p.grid, xticks=p.xticks, aspect=p.aspect,
+                   linestyle=p.linestyle)
+        end
     elseif p.type == 4
         plot(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,
              labels=p.labels, xlims=p.xlims, ylims=p.ylims, ann=p.ann,

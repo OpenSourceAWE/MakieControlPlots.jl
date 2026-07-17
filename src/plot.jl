@@ -43,7 +43,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, legendsize, titlesize, xscale, grid, label, xticks, nothing)
+                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -92,7 +92,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 4, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing)
     if disp
         xscale_sym = xscale::Symbol
         builder = function(layout)
@@ -174,7 +174,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing)
     if disp
         xscale_sym = xscale::Symbol
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
@@ -254,7 +254,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing)
     if disp
         xscale_sym = xscale::Symbol
         corner = _resolve_corner(legend_position, X,

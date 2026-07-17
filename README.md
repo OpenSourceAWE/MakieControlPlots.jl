@@ -197,12 +197,45 @@ plotxy(X, Y; xlabel="", ylabel="", title="", xlims=nothing,
        ysize=nothing, xsize=nothing, labelsize=16,
        output_folder="output", disp=false, new_screen=true,
        titlesize=18, legendsize=16, xscale=:identity, grid=true, xticks=nothing,
-       aspect=nothing)
+       aspect=nothing, linestyle=nothing)
 ```
 
 Pass `aspect=:equal` to give the X and Y axes equal scaling (matplotlib's
 `ax.set_aspect("equal")`), useful for plotting paths where distances along X
-and Y must look the same.
+and Y must look the same. The optional `linestyle` parameter sets the line
+style of the curve, e.g. `linestyle=:dash`.
+
+#### Multiple XY series in one plot
+
+You can also pass a vector of `X` and a vector of `Y` series to plot several
+XY curves in one plot:
+
+```julia
+using MakieControlPlots
+
+T = 0:0.05:2pi+0.1
+X = sin.(T)
+Y1 = cos.(3T)
+Y2 = cos.(4T)
+p = plotxy([X, X], [Y1, Y2], fig="dual xy-plot", xlabel="X", ylabel="Y", title="XY plot",
+           legend=["cos(3T)", "cos(4T)"], linestyle=[:solid, :dash], legendsize=16)
+```
+
+Full function signature:
+
+```julia
+plotxy(Xs::AbstractVector{<:AbstractVector}, Ys::AbstractVector{<:AbstractVector};
+       xlabel="", ylabel="", title="", xlims=nothing,
+       ylims=nothing, ann=nothing, scatter=false, fig="",
+       ysize=nothing, xsize=nothing, labelsize=16,
+       output_folder="output", disp=false, new_screen=true,
+       titlesize=18, legendsize=16, xscale=:identity, grid=true, xticks=nothing,
+       aspect=nothing, legend=nothing, linestyle=nothing)
+```
+
+The optional `legend` parameter takes a vector of labels, one per series.
+The optional `linestyle` parameter can be a single line style applied to all
+series, or a vector of line styles, one per series.
 
 ### n-in-one plot
 

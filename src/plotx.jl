@@ -76,30 +76,21 @@ function _predict_row1_deficit(builder, target_h, window_w, n)
         axes_list = _extract_axes(artifacts)
         _add_controls!(fig_probe, axes_list, builder, "__legend_probe__";
                        figsize=(window_w, target_h))
-        legends = [p for p in fig_probe.content if p isa Legend]
-        # Row bands, top to bottom: axes_list is already ordered top-to-bottom
-        # (row 1, row 2, ...), so row i spans from the next row's top edge
-        # down to this row's own top edge.
-        ax_tops = [(bb = ax.layoutobservables.computedbbox[]; bb.origin[2] + bb.widths[2])
-                   for ax in axes_list]
+        # The builder reports each channel's own axislegend (`nothing` for a
+        # channel that got none), so a legend is paired with the axis that
+        # owns it by construction. Recovering that pairing geometrically —
+        # scraping `fig_probe.content` for legends and asking which row band
+        # a legend's top edge falls into — is not reliable: an axislegend is
+        # anchored flush with the top of its axis, so its top edge coincides
+        # with the band boundary and sub-pixel layout rounding can push it
+        # into the neighbouring row's band, leaving one row with two legends
+        # and its neighbour with none.
+        legends = _extract_legends(artifacts, length(axes_list))
         max_overflow = 0.0
         for (i, ax) in pairs(axes_list)
-            isempty(legends) && continue
+            leg = legends[i]
+            isnothing(leg) && continue
             ax_bbox = ax.layoutobservables.computedbbox[]
-            ax_top = ax_tops[i]
-            row_bottom = i < length(axes_list) ? ax_tops[i + 1] : -Inf
-            # Only a channel that actually got its own axislegend (anchored
-            # at the top of its axis) has a legend whose top edge falls
-            # inside this row's band; matching every axis to the nearest
-            # legend overall — even one that belongs to a different,
-            # legend-less-neighbor row — produced bogus, huge "overflow"
-            # values for rows without a legend of their own.
-            owned = filter(legends) do l
-                leg_top = (lb = l.layoutobservables.computedbbox[]; lb.origin[2] + lb.widths[2])
-                row_bottom < leg_top <= ax_top
-            end
-            isempty(owned) && continue
-            leg = only(owned)
             leg_bottom = leg.layoutobservables.computedbbox[].origin[2]
             max_overflow = max(max_overflow, ax_bbox.origin[2] - leg_bottom)
         end
@@ -138,6 +129,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
         xscale_sym = xscale::Symbol
         builder = function(layout)
             axes_arr = Axis[]
+            legends_arr = Union{Legend,Nothing}[]
             for (i, y) in pairs(Y)
                 ax = Axis(layout[i, 1]; ylabelsize=ylsize,
                           title=(i == 1) ? title : "",
@@ -192,7 +184,9 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 xlims!(ax, first(X), last(X))
                 pos = (row_bumped[i] && legend_position === :auto) ? :rt :
                       _resolve_corner(legend_position, X, ax_yvecs)
-                added_label && axislegend(ax; position=pos, labelsize=legendsize)
+                push!(legends_arr,
+                      added_label ? axislegend(ax; position=pos, labelsize=legendsize) :
+                      nothing)
             end
             if length(axes_arr) > 1
                 linkxaxes!(axes_arr...)
@@ -204,7 +198,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 axes_arr[end].xlabel = string(xlabel)
                 axes_arr[end].xlabelsize = xlsize
             end
-            return (; axes=axes_arr)
+            return (; axes=axes_arr, legends=legends_arr)
         end
         if any(>(0), needed_hs)
             deficit = _predict_row1_deficit(builder, size_px[2], size_px[1], n)

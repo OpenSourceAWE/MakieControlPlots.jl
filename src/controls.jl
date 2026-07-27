@@ -170,6 +170,20 @@ function _extract_axes(artifacts)
     end
 end
 
+# Per-axis legends as reported by a builder that tracks them (one entry per
+# axis, `nothing` where an axis has no legend of its own). Builders that do
+# not report legends yield all-`nothing`, i.e. "no legend information".
+function _extract_legends(artifacts, n_axes::Int)
+    out = Union{Legend,Nothing}[nothing for _ in 1:n_axes]
+    if artifacts isa NamedTuple && haskey(artifacts, :legends)
+        for (i, l) in pairs(artifacts.legends)
+            i > n_axes && break
+            l isa Legend && (out[i] = l)
+        end
+    end
+    return out
+end
+
 function _add_controls!(fig::Figure, axes_list::AbstractVector,
                         builder, fig_name::String; output_folder="output",
                         fig_width=640, figsize=_DEFAULT_PLOTSIZE)

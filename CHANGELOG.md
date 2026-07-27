@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.1.10 27-07-2026
+
+### Fixed
+- `plotx`: the extra window height reserved for legends could be assigned to
+  the wrong channel. The legend-overflow probe used to pair legends with axes
+  geometrically, but an `axislegend` sits flush with the top of its axis, so
+  sub-pixel layout rounding could push it into the neighboring row's band —
+  leaving one channel with two legends and another with none, and producing
+  bogus growth. The `plotx` builder now reports each channel's legend
+  (`nothing` where a channel has none) alongside its axes, so the pairing is
+  correct by construction.
+
 ## v0.1.9 17-07-2026
 
 ### Added

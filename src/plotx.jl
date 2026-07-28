@@ -106,12 +106,12 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
                legend_position=:auto, output_folder="output", yzoom=1.0,
                disp=false, new_screen=true, legendsize=16, titlesize=18,
-               xscale::Symbol=:identity, grid=true, xticks=nothing)
+               xscale::Symbol=:identity, grid=true, xticks=nothing, rowgap=18)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, nothing, rowgap)
     if disp
         n = length(Y)
         base_row_h = round(Int, 2 * yzoom * 96)
@@ -188,6 +188,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                       added_label ? axislegend(ax; position=pos, _legend_style(legendsize)...) :
                       nothing)
             end
+            rowgap!(layout, rowgap)
             if length(axes_arr) > 1
                 linkxaxes!(axes_arr...)
             end

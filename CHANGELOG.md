@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.1.12 28-07-2026
+
+### Added
+- `rowgap` keyword to `plotx` — controls the vertical gap, in pixels,
+  between stacked subplots (default `18`, matching Makie's own
+  `GridLayout` default, so existing calls render unchanged). Passed
+  through `PlotX` save/load round-tripping like the other display
+  keywords.
+
 ## v0.1.11 28-07-2026
 
 ### Fixed

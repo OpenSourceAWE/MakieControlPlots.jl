@@ -17,7 +17,7 @@ export bode_plot, close, install_examples, load, migrate_legacy_plotx_file,
 TITLE_FONT::String = "CMU Serif"
 LINE_WIDTH::Float64 = 2
 
-# Makie sizes a legend's *box* — the colour patch, the gap between rows, the
+# Makie sizes a legend's *box* — the color patch, the gap between rows, the
 # frame padding, the patch-to-label gap — from theme constants that do not
 # track `labelsize`. Passing only `labelsize=legendsize` therefore shrinks the
 # text while the frame stays put: with a small `legendsize` the 20 px patch,

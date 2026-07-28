@@ -130,7 +130,7 @@ function plotxy(Xs::AbstractVector{<:AbstractVector},
                 end
             end
             if has_label
-                axislegend(ax; labelsize=legendsize)
+                axislegend(ax; _legend_style(legendsize)...)
             end
             isnothing(xlims) || xlims!(ax, xlims[1], xlims[2])
             isnothing(ylims) || ylims!(ax, ylims[1], ylims[2])

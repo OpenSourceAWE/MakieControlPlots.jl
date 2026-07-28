@@ -72,7 +72,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
                 text!(ax, ann[1], ann[2]; text=string(ann[3]), fontsize=14)
             end
             if !isempty(label)
-                axislegend(ax; labelsize=legendsize)
+                axislegend(ax; _legend_style(legendsize)...)
             end
             return (; axes=[ax])
         end
@@ -155,7 +155,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
             end
             any_label && axislegend(ax;
                 position=_resolve_corner(legend_position, X, legend_yvecs),
-                labelsize=legendsize)
+                _legend_style(legendsize)...)
             return (; axes=[ax])
         end
         _show_interactive(builder; fig_name=fig, output_folder, new_screen)
@@ -228,7 +228,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             Legend(layout[1, 1], [l1, l2], leg_labels;
                    tellwidth=false, tellheight=false, halign=leg_ha,
                    valign=leg_va, margin=(10, 10, 10, 10),
-                   labelsize=legendsize)
+                   _legend_style(legendsize)...)
             return (; axes=[ax1, ax2])
         end
         _show_interactive(builder; fig_name=fig, output_folder, new_screen)
@@ -309,7 +309,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             Legend(layout[1, 1], lns, leg_labels;
                    tellwidth=false, tellheight=false, halign=leg_ha,
                    valign=leg_va, margin=(10, 10, 10, 10),
-                   labelsize=legendsize)
+                   _legend_style(legendsize)...)
             return (; axes=[ax1, ax2])
         end
         _show_interactive(builder; fig_name=fig, output_folder, new_screen)

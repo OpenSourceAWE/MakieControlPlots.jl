@@ -39,7 +39,7 @@ function _legend_row_height_px(labels_vec, legendsize, has_title, title_str,
         for (i, l) in pairs(labels_vec)
             lines!(ax, [0.0, 1.0], [Float64(i), Float64(i) + 1]; label=l)
         end
-        leg = axislegend(ax; position=:rt, labelsize=legendsize)
+        leg = axislegend(ax; position=:rt, _legend_style(legendsize)...)
         notify(fig.scene.viewport)
         prot = ax.layoutobservables.protrusions[]
         content_h = leg.layoutobservables.computedbbox[].widths[2]
@@ -185,7 +185,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 pos = (row_bumped[i] && legend_position === :auto) ? :rt :
                       _resolve_corner(legend_position, X, ax_yvecs)
                 push!(legends_arr,
-                      added_label ? axislegend(ax; position=pos, labelsize=legendsize) :
+                      added_label ? axislegend(ax; position=pos, _legend_style(legendsize)...) :
                       nothing)
             end
             if length(axes_arr) > 1

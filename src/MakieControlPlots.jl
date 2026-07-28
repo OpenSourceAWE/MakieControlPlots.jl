@@ -17,6 +17,27 @@ export bode_plot, close, install_examples, load, migrate_legacy_plotx_file,
 TITLE_FONT::String = "CMU Serif"
 LINE_WIDTH::Float64 = 2
 
+# Makie sizes a legend's *box* — the colour patch, the gap between rows, the
+# frame padding, the patch-to-label gap — from theme constants that do not
+# track `labelsize`. Passing only `labelsize=legendsize` therefore shrinks the
+# text while the frame stays put: with a small `legendsize` the 20 px patch,
+# not the glyphs, sets the row pitch, so the entries look over-spaced inside an
+# over-large box. Scale that geometry with the label size instead. The
+# reference is the package's own default `legendsize` of 16 (not Makie's
+# `labelsize` default of 14), so plots that don't override `legendsize` keep
+# Makie's stock legend metrics exactly and render unchanged.
+const _LEGEND_REF_SIZE = 16
+
+function _legend_style(legendsize)
+    s = legendsize / _LEGEND_REF_SIZE
+    return (; labelsize     = legendsize,
+              patchsize     = (20f0 * s, 20f0 * s),
+              rowgap        = 3 * s,
+              colgap        = 16 * s,
+              padding       = (6f0 * s, 6f0 * s, 6f0 * s, 6f0 * s),
+              patchlabelgap = 5 * s)
+end
+
 function bode_plot end
 
 function _xscale_func(xscale::Symbol)

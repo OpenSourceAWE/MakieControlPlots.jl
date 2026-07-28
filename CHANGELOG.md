@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## v0.1.11 28-07-2026
+
+### Fixed
+- Legends drawn with a non-default `legendsize` kept a frame sized for the
+  default: only `labelsize` was passed to Makie, and the patch, row gap,
+  padding and patch-label gap come from theme constants that do not track it.
+  With a small `legendsize` the 20 px color patch — not the glyphs — set the
+  row pitch, so entries looked over-spaced inside an over-large box. That
+  geometry now scales with `legendsize` in `plot`, `plotx` and `plotxy`, and
+  in the row-height probe `plotx` uses to reserve space for legends, so small
+  legends no longer over-reserve window height. Plots that do not override
+  `legendsize` are unaffected: the scaling is anchored to the default of 16,
+  which reproduces Makie's stock legend metrics exactly.
+
 ## v0.1.10 27-07-2026
 
 ### Fixed

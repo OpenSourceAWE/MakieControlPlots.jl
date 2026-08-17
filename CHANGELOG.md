@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.1.14 17-08-2026
+
+### Fixed
+- `plotx` twin y-axis legends rendered `LaTeXString` labels as literal
+  `$...$` text instead of typeset math. The legend label collector was
+  typed as `String[]`, which converted each pushed `LaTeXString` down to a
+  plain `String` on insertion; it's now untyped so labels keep their
+  original type through to the `Legend` call.
+
 ## v0.1.13 17-08-2026
 
 ### Added

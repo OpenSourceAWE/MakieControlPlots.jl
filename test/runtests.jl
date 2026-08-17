@@ -84,6 +84,41 @@ Y = X .^ 2
         @test p.yzoom == 1.0
     end
 
+    @testset "plotx twin y-axis" begin
+        import MakieControlPlots: _LAST_BUILDER, _extract_axes
+        import Makie: GridLayout
+
+        p = plotx(X, [Y, 30 .* Y], 2 .* Y;
+                  ylabels=[["left", "right"], "c"],
+                  labels=[["l", "r"], nothing], disp=true)
+        @test p isa PlotX
+        @test p.type == 2
+        # The nested `ylabels` entry rides in an existing field, so a twin
+        # plot stays save/load-able without a serialization bump.
+        @test p.ylabels == [["left", "right"], "c"]
+
+        axs = _extract_axes(_LAST_BUILDER[](GridLayout(Figure()[1, 1])))
+        # Two channels, and the first one's second y axis appended after them.
+        @test length(axs) == 3
+        @test axs[1].ylabel[] == "left"
+        @test axs[2].ylabel[] == "c"
+        @test axs[3].ylabel[] == "right"
+        @test axs[3].yaxisposition[] == :right
+        @test axs[1].yaxisposition[] == :left
+    end
+
+    @testset "plotx twin y-axis needs two curves" begin
+        import MakieControlPlots: _LAST_BUILDER, _extract_axes
+        import Makie: GridLayout
+
+        # A single curve cannot fill two axes: the channel falls back to one,
+        # labeled by the left-hand entry, rather than drawing an empty axis.
+        plotx(X, Y, 2 .* Y; ylabels=[["left", "right"], "c"], disp=true)
+        axs = _extract_axes(_LAST_BUILDER[](GridLayout(Figure()[1, 1])))
+        @test length(axs) == 2
+        @test axs[1].ylabel[] == "left"
+    end
+
     @testset "plotxy" begin
         p = plotxy(X, Y)
         @test p isa PlotX
@@ -114,6 +149,9 @@ Y = X .^ 2
                        ylabels=["a","b"], labels=["a1","a2","b"],
                        disp=true),
             () -> plotx(X, Y, 2 .* Y; ylabels=["a","b"], disp=true),
+            () -> plotx(X, [Y, 30 .* Y], 2 .* Y;
+                        ylabels=[["left","right"], "c"],
+                        labels=[["l","r"], nothing], disp=true),
             () -> plotxy(Y, X; xlabel="X", ylabel="Y", disp=true),
             () -> plot(rand(10, 2); title="Matrix", disp=true),
             () -> plot([0.1, 0.2, 0.3], rand(3, 2); title="X+Matrix", disp=true),

@@ -101,6 +101,26 @@ function _predict_row1_deficit(builder, target_h, window_w, n)
     return ceil(Int, deficit)
 end
 
+# A `ylabels` entry that is itself a 2-element vector or tuple marks that
+# channel as a twin-axis panel: its last curve is drawn against a second y
+# axis on the right labeled `ylabels[i][2]`, the earlier ones against the
+# left axis labeled `ylabels[i][1]`. This mirrors the left/right convention
+# `plot(X, Y1, Y2)` already uses for `ylabels`, so it needs no new keyword —
+# and `PlotX` structs saved by older versions keep round-tripping unchanged,
+# since the marker rides along in a field that already exists.
+_is_twin_ylabel(l) = (l isa AbstractVector || l isa Tuple) && length(l) == 2
+
+# One channel's curves as a plain vector, whether it was passed as a single
+# time series, a vector of them, or a tuple of them.
+_channel_curves(y) = y isa AbstractVector{<:Number} ? Any[y] : collect(y)
+
+# Makie's color cycler runs per axis, so a twin panel's right-hand curve would
+# restart the cycle and repeat the color of the first left-hand curve. Colors
+# are therefore assigned explicitly from the default palette, indexed across
+# the channel as a whole — which reproduces exactly what a single-axis channel
+# gets automatically.
+_cycle_color(j::Int) = Makie.wong_colors()[mod1(j, length(Makie.wong_colors()))]
+
 function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                xlims=nothing, ylims=nothing, ann=nothing, scatter=false,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
@@ -129,8 +149,16 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
         xscale_sym = xscale::Symbol
         builder = function(layout)
             axes_arr = Axis[]
+            twins_arr = Axis[]
             legends_arr = Union{Legend,Nothing}[]
             for (i, y) in pairs(Y)
+                ylbl = (!isnothing(ylabels) && i <= length(ylabels)) ?
+                       ylabels[i] : nothing
+                curves = _channel_curves(y)
+                # A twin panel needs a curve for each of its two axes; with
+                # only one, the request is silently the ordinary single-axis
+                # channel it has to be, labeled by the left-hand entry.
+                twin = _is_twin_ylabel(ylbl) && length(curves) > 1
                 ax = Axis(layout[i, 1]; ylabelsize=ylsize,
                           title=(i == 1) ? title : "",
                           titlesize=titlesize,
@@ -144,13 +172,76 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 end
                 ax.xgridvisible = grid
                 ax.ygridvisible = grid
-                if !isnothing(ylabels) && i <= length(ylabels)
-                    ax.ylabel = string(ylabels[i])
+                if !isnothing(ylbl)
+                    ax.ylabel = string(_is_twin_ylabel(ylbl) ? ylbl[1] : ylbl)
                 end
                 push!(axes_arr, ax)
                 lbl = nothing
                 if !isnothing(labels) && i <= length(labels)
                     lbl = labels[i]
+                end
+                if twin
+                    ax2 = Axis(layout[i, 1]; ylabel=string(ylbl[2]),
+                               ylabelsize=ylsize, yaxisposition=:right,
+                               backgroundcolor=RGBAf(0, 0, 0, 0),
+                               xscale=_xscale_func(xscale))
+                    if (xscale_sym::Symbol) == :log10
+                        ax2.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
+                    end
+                    if !isnothing(xticks)
+                        ax2.xticks = xticks
+                    end
+                    hidespines!(ax2)
+                    hidexdecorations!(ax2)
+                    # The left axis draws the panel's grid: a second set of
+                    # gridlines, at the right axis' own tick positions, would
+                    # not line up with it.
+                    ax2.xgridvisible = false
+                    ax2.ygridvisible = false
+                    push!(twins_arr, ax2)
+                    lns = Any[]
+                    leg_labels = String[]
+                    ax_yvecs = Vector{Float64}[]
+                    for (j, yy) in pairs(curves)
+                        target = (j == length(curves)) ? ax2 : ax
+                        ln = lines!(target, X, yy; linewidth=LINE_WIDTH,
+                                    color=_cycle_color(j))
+                        l = (lbl isa AbstractVector && j <= length(lbl)) ?
+                            string(lbl[j]) : ""
+                        if l != ""
+                            push!(lns, ln)
+                            push!(leg_labels, l)
+                        end
+                        # Both axes carry their own scale, so the legend has to
+                        # pick its corner from the curves' shapes, not values.
+                        push!(ax_yvecs, _normalize01(yy))
+                    end
+                    # The right axis' label and ticks take their curve's color,
+                    # as in `plot(X, Y1, Y2)`; the left ones only when a single
+                    # curve makes the mapping unambiguous.
+                    ax2.ylabelcolor = ax2.yticklabelcolor = _cycle_color(length(curves))
+                    if length(curves) == 2
+                        ax.ylabelcolor = ax.yticklabelcolor = _cycle_color(1)
+                    end
+                    xlims!(ax, first(X), last(X))
+                    xlims!(ax2, first(X), last(X))
+                    if isempty(lns)
+                        push!(legends_arr, nothing)
+                    else
+                        pos = (row_bumped[i] && legend_position === :auto) ? :rt :
+                              _resolve_corner(legend_position, X, ax_yvecs)
+                        leg_ha, leg_va = _corner_align(pos)
+                        # One legend for the whole panel, built by hand: an
+                        # `axislegend` only sees the plots of the axis it is
+                        # attached to, and these curves live on two.
+                        push!(legends_arr,
+                              Legend(layout[i, 1], lns, leg_labels;
+                                     tellwidth=false, tellheight=false,
+                                     halign=leg_ha, valign=leg_va,
+                                     margin=(10, 10, 10, 10),
+                                     _legend_style(legendsize)...))
+                    end
+                    continue
                 end
                 added_label = false
                 ax_yvecs = Vector{Float64}[]
@@ -189,8 +280,11 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                       nothing)
             end
             rowgap!(layout, rowgap)
-            if length(axes_arr) > 1
-                linkxaxes!(axes_arr...)
+            # Twin axes share the stack's x axis like any other panel, so they
+            # pan and zoom with it rather than drifting out of register.
+            all_axes = vcat(axes_arr, twins_arr)
+            if length(all_axes) > 1
+                linkxaxes!(all_axes...)
             end
             for i in 1:length(axes_arr)-1
                 hidexdecorations!(axes_arr[i]; grid=false, ticks=false)
@@ -199,7 +293,10 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 axes_arr[end].xlabel = string(xlabel)
                 axes_arr[end].xlabelsize = xlsize
             end
-            return (; axes=axes_arr, legends=legends_arr)
+            # Channel axes first, twins after: the interactive controls act on
+            # every axis reported here, while `_extract_legends` pairs the
+            # first `length(legends_arr)` of them with the per-channel legends.
+            return (; axes=all_axes, legends=legends_arr)
         end
         if any(>(0), needed_hs)
             deficit = _predict_row1_deficit(builder, size_px[2], size_px[1], n)

@@ -167,6 +167,34 @@ p = plotx(T, [Y1, Y2], Y; ylabels=["sin","cos"], labels=[[L"Y_1", L"Y_2"]],
 It is sufficient to pass one or more vectors of time series to `plotx`. In this
 case the labels have to be a vector of vectors.
 
+### Twin y-axis in a channel
+
+Any channel can get a second y axis on the right by passing a two-element
+vector as its `ylabels` entry — the same left/right convention
+`plot(X, Y1, Y2)` uses. The channel's **last** curve is drawn against the right
+axis, the earlier ones against the left axis:
+
+```julia
+using MakieControlPlots
+
+T = 0:0.05:2pi
+FORCE = 300 .+ 100*sin.(2T)
+POS_Z = sin.(T)
+VEL_Z = 5*cos.(T)
+p = plotx(T, FORCE, [POS_Z, VEL_Z];
+          ylabels=["force [N]", ["pos_z [m]", "vel_z [m/s]"]],
+          labels=[nothing, ["pos_z", "vel_z"]],
+          fig="multi-channel-twin", title="Twin y-axis in one channel",
+          titlesize=20, legendsize=18)
+```
+
+<p align="center"><img src="./docs/multi-channel-twin.png" width="400" /></p>
+
+The right-hand axis label and tick labels take the color of their curve. Both
+axes of a twin channel share the stack's x axis, so they pan and zoom together,
+and the channel gets a single legend covering the curves on both. A channel
+with only one curve ignores the second entry and is labeled by the first.
+
 Full function signature:
 
 ```julia

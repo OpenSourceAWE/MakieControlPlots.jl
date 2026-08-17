@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## v0.1.13 17-08-2026
+
+### Added
+- Twin y axes in a `plotx` channel: passing a two-element vector as a
+  channel's `ylabels` entry draws that channel's last curve against a
+  second y axis on the right, labeled by the second entry, and the earlier
+  curves against the left one — the same left/right convention
+  `plot(X, Y1, Y2)` already uses for `ylabels`. No new keyword argument, so
+  `PlotX` structs keep round-tripping through `save`/`load` unchanged and
+  existing calls render exactly as before. The right-hand axis label and
+  tick labels take their curve's color, both axes are x-linked into the
+  stack so they pan and zoom with it, and the channel gets a single legend
+  spanning the curves on both axes. A channel with only one curve ignores
+  the second label and stays single-axis.
+
 ## v0.1.12 28-07-2026
 
 ### Added

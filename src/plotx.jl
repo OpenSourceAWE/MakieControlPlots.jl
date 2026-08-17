@@ -200,7 +200,12 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     ax2.ygridvisible = false
                     push!(twins_arr, ax2)
                     lns = Any[]
-                    leg_labels = String[]
+                    # Not `String[]`: `lbl[j]` is usually a `LaTeXString`, and
+                    # pushing into a concretely `Vector{String}` converts each
+                    # entry down to a plain `String`, silently dropping the
+                    # type Makie's Legend needs to render it as math instead
+                    # of literal `$...$` text.
+                    leg_labels = []
                     ax_yvecs = Vector{Float64}[]
                     for (j, yy) in pairs(curves)
                         target = (j == length(curves)) ? ax2 : ax

@@ -73,14 +73,35 @@ function _output_path(output_folder, base, ext)
     return _path_string(output_folder, base, ext)
 end
 
+# NaN is how a caller blanks a stretch of a curve — Makie draws it as a gap —
+# so it must not decide where the legend goes. A single NaN reaching `extrema`
+# poisons `ymin`/`ymax`, every `ny(yi)` becomes NaN, every comparison against
+# `nearest` is false, and all four corners tie at `Inf`: the first one wins and
+# the legend lands bottom-left regardless of the data. Non-finite samples are
+# skipped instead, and a curve with nothing finite in it simply does not vote.
+function _finite_extrema(v)
+    lo, hi, seen = Inf, -Inf, false
+    for x in v
+        isfinite(x) || continue
+        seen = true
+        x < lo && (lo = x)
+        x > hi && (hi = x)
+    end
+    return seen ? (lo, hi) : nothing
+end
+
 function _legend_corner(xvals, yvecs)
     isempty(yvecs) && return :rt
     xs = Float64.(collect(xvals))
     isempty(xs) && return :rt
-    xmin, xmax = extrema(xs)
+    xex = _finite_extrema(xs)
+    isnothing(xex) && return :rt
+    xmin, xmax = xex
     ys_all = reduce(vcat, (Float64.(y) for y in yvecs))
     isempty(ys_all) && return :rt
-    ymin, ymax = extrema(ys_all)
+    yex = _finite_extrema(ys_all)
+    isnothing(yex) && return :rt
+    ymin, ymax = yex
     nx(x) = xmax == xmin ? 0.5 : (x - xmin) / (xmax - xmin)
     ny(y) = ymax == ymin ? 0.5 : (y - ymin) / (ymax - ymin)
     corners = ((:lb, 0.0, 0.0), (:rb, 1.0, 0.0),
@@ -91,6 +112,7 @@ function _legend_corner(xvals, yvecs)
         nearest = Inf
         for y in yvecs
             for (xi, yi) in zip(xs, Float64.(y))
+                (isfinite(xi) && isfinite(yi)) || continue
                 d = (nx(xi) - cx)^2 + (ny(yi) - cy)^2
                 d < nearest && (nearest = d)
             end
@@ -108,9 +130,14 @@ function _resolve_corner(legend_position, xvals, yvecs)
            legend_position
 end
 
+# Same reason as `_legend_corner`: this feeds it, so a NaN anywhere in `y` must
+# not turn the whole normalized curve into NaN. The gaps stay NaN and are
+# skipped there; a curve with no finite sample normalizes to a flat 0.5.
 function _normalize01(y)
     yf = Float64.(y)
-    lo, hi = extrema(yf)
+    ex = _finite_extrema(yf)
+    isnothing(ex) && return fill(0.5, length(yf))
+    lo, hi = ex
     hi == lo && return fill(0.5, length(yf))
     return (yf .- lo) ./ (hi - lo)
 end

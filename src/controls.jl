@@ -62,9 +62,13 @@ function _ensure_folder(folder)
     return f
 end
 
+function _sanitize_filename(name::AbstractString)
+    return replace(name, " " => "_", "/" => "_", "\\" => "_")
+end
+
 function _path_string(output_folder, base, ext)
     folder = isempty(output_folder) ? "." : output_folder
-    name = replace(base, " " => "_")
+    name = _sanitize_filename(base)
     return joinpath(folder, "$(name).$(ext)")
 end
 

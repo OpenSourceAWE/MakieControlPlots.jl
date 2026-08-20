@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## v0.1.15 20-08-2026
+
+### Fixed
+- `plot`/`plotx`: automatic legend placement and curve normalization broke
+  on a `NaN` sample (the usual way to draw a gap in a curve). A single `NaN`
+  reaching `extrema` poisoned `ymin`/`ymax`, so every corner tied at `Inf`
+  and the legend always landed bottom-left regardless of the data, while
+  normalizing a curve with any `NaN` turned the whole curve to `NaN`. Both
+  computations now skip non-finite samples; a curve with nothing finite in
+  it simply does not vote on the legend corner and normalizes to a flat 0.5.
+- `savefig`/`save`: output file names containing `/` or `\` are now
+  sanitized to `_` like spaces already were, so they can't be misread as
+  path separators.
+
 ## v0.1.14 17-08-2026
 
 ### Fixed

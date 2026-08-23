@@ -454,6 +454,24 @@ close("my_figure")   # close a specific figure by name
 close("all")         # close all open figure windows
 ```
 
+### `savefig(filename; output_folder="output")`
+
+Save the most recently displayed plot to a file, keeping its current zoom and
+pan. The format (PNG/PDF/...) is inferred from `filename`'s extension. A
+`filename` without a directory is written under `output_folder`; spaces and
+path separators (`/`, `\`) in the base name are replaced with `_`. Requires a
+plot to have been displayed first (e.g. via `disp=true`, or by `display`ing
+the returned struct), otherwise it errors.
+
+```julia
+using MakieControlPlots
+
+X = 0:0.1:2pi
+Y = sin.(X)
+p = plot(X, Y; fig="my-plot", disp=true)
+savefig("my-plot.png")
+```
+
 ### `wait_for_figures()`
 
 Block execution until all interactive figure windows have been closed by the

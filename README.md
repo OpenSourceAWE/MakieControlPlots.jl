@@ -137,13 +137,25 @@ plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       title="", ysize=nothing, xsize=nothing, labelsize=16,
       legend_position=:auto, output_folder="output", yzoom=1.0,
       disp=false, new_screen=true, legendsize=16, titlesize=18,
-      xscale=:identity, grid=true, xticks=nothing, rowgap=18)
+      xscale=:identity, grid=true, xticks=nothing, rowgap=18,
+      linestyle=nothing, color=nothing)
 ```
 
 The optional parameter `ysize` can be used to change the size of the y-axis
 labels. The optional parameter `yzoom` scales the vertical size of each channel.
 The optional parameter `rowgap` sets the vertical gap, in pixels, between the
-stacked subplots.
+stacked subplots. The optional parameter `linestyle` sets a line style per
+channel (one entry per `Y...` channel, the same convention as `labels`/
+`ylabels`): a single style (e.g. `:dash`) applies to every curve in that
+channel, or a vector gives one style per curve in a multi-curve channel.
+`nothing` (the default, at either level) keeps Makie's solid line.
+`legend_position` (`:auto`, or one of `:lt`/`:rt`/`:lb`/`:rb`) can likewise be
+a single corner applied to every channel, or a vector giving one corner (or
+`:auto`) per channel. `color` follows the same one-entry-per-channel
+convention as `linestyle`: a single color for the whole channel, or a vector
+giving one color per curve — a `nothing` curve entry (or a channel left out
+of the vector) keeps that curve on the default cycle, so only the curves that
+need an explicit color have to name one.
 
 ### n x m plot
 
@@ -203,7 +215,8 @@ plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       title="", ysize=nothing, xsize=nothing, labelsize=16,
       legend_position=:auto, output_folder="output", yzoom=1.0,
       disp=false, new_screen=true, legendsize=16, titlesize=18,
-      xscale=:identity, grid=true, xticks=nothing, rowgap=18)
+      xscale=:identity, grid=true, xticks=nothing, rowgap=18,
+      linestyle=nothing, color=nothing)
 ```
 
 ### XY plot

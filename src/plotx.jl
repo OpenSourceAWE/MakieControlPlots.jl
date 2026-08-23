@@ -110,6 +110,38 @@ end
 # since the marker rides along in a field that already exists.
 _is_twin_ylabel(l) = (l isa AbstractVector || l isa Tuple) && length(l) == 2
 
+# `linestyle`, one entry per channel (mirroring `labels`/`ylabels`): that
+# entry is a single style applied to every curve in the channel, or, for a
+# multi-curve channel, a vector of per-curve styles. A missing/`nothing`
+# entry keeps Makie's solid default.
+_channel_linestyle(style_all, i) =
+    (!isnothing(style_all) && i <= length(style_all)) ? style_all[i] : nothing
+_curve_linestyle(style, j) =
+    isnothing(style) ? nothing : (style isa AbstractVector ?
+        (j <= length(style) ? style[j] : nothing) : style)
+
+# `legend_position`, one entry per channel, same convention as `labels`/
+# `linestyle`: a vector gives one corner (`:auto`, `:lt`, `:rt`, `:lb`, `:rb`)
+# per channel; a bare symbol (the default `:auto`) applies to every channel,
+# unchanged from before per-channel positions existed.
+_channel_legend_position(pos_all, i) =
+    pos_all isa AbstractVector ? (i <= length(pos_all) ? pos_all[i] : :auto) : pos_all
+
+# `color`, one entry per channel, same convention as `linestyle`: a single
+# color applies to every curve in that channel, or a vector gives one color
+# per curve. A missing entry — the whole channel, a `nothing` curve entry, or
+# one past the end of the vector — falls back to the default cycle color, so
+# only the curves that need an explicit color name one. Render-only, like
+# `disp`/`new_screen`/`output_folder`: not one of `PlotX`'s persisted fields,
+# so a saved-and-reloaded plot redraws with the default cycle.
+_channel_color(color_all, i) =
+    (!isnothing(color_all) && i <= length(color_all)) ? color_all[i] : nothing
+_curve_color(color, j) =
+    isnothing(color) ? _cycle_color(j) :
+    (color isa AbstractVector ?
+        ((j <= length(color) && !isnothing(color[j])) ? color[j] : _cycle_color(j)) :
+        color)
+
 # One channel's curves as a plain vector, whether it was passed as a single
 # time series, a vector of them, or a tuple of them.
 _channel_curves(y) = y isa AbstractVector{<:Number} ? Any[y] : collect(y)
@@ -126,12 +158,13 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                fig="", title="", ysize=nothing, xsize=nothing, labelsize=16,
                legend_position=:auto, output_folder="output", yzoom=1.0,
                disp=false, new_screen=true, legendsize=16, titlesize=18,
-               xscale::Symbol=:identity, grid=true, xticks=nothing, rowgap=18)
+               xscale::Symbol=:identity, grid=true, xticks=nothing, rowgap=18,
+               linestyle=nothing, color=nothing)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, nothing, rowgap)
+                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, linestyle, rowgap)
     if disp
         n = length(Y)
         base_row_h = round(Int, 2 * yzoom * 96)
@@ -180,6 +213,9 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 if !isnothing(labels) && i <= length(labels)
                     lbl = labels[i]
                 end
+                ls = _channel_linestyle(linestyle, i)
+                lp = _channel_legend_position(legend_position, i)
+                cc = _channel_color(color, i)
                 if twin
                     ax2 = Axis(layout[i, 1]; ylabel=string(ylbl[2]),
                                ylabelsize=ylsize, yaxisposition=:right,
@@ -210,7 +246,8 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     for (j, yy) in pairs(curves)
                         target = (j == length(curves)) ? ax2 : ax
                         ln = lines!(target, X, yy; linewidth=LINE_WIDTH,
-                                    color=_cycle_color(j))
+                                    color=_curve_color(cc, j),
+                                    linestyle=_curve_linestyle(ls, j))
                         l = (lbl isa AbstractVector && j <= length(lbl)) ?
                             string(lbl[j]) : ""
                         if l != ""
@@ -233,8 +270,8 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     if isempty(lns)
                         push!(legends_arr, nothing)
                     else
-                        pos = (row_bumped[i] && legend_position === :auto) ? :rt :
-                              _resolve_corner(legend_position, X, ax_yvecs)
+                        pos = (row_bumped[i] && lp === :auto) ? :rt :
+                              _resolve_corner(lp, X, ax_yvecs)
                         leg_ha, leg_va = _corner_align(pos)
                         # One legend for the whole panel, built by hand: an
                         # `axislegend` only sees the plots of the axis it is
@@ -257,29 +294,35 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                            j <= length(lbl)
                             l = string(lbl[j])
                         end
+                        curve_ls = _curve_linestyle(ls, j)
+                        # Only channels that opt into `color` get an explicit
+                        # one; others keep Makie's own per-axis auto-cycle.
+                        curve_kw = isnothing(cc) ? (;) : (; color = _curve_color(cc, j))
                         if l != ""
-                            lines!(ax, X, yy; linewidth=LINE_WIDTH, label=l)
+                            lines!(ax, X, yy; linewidth=LINE_WIDTH, label=l, linestyle=curve_ls, curve_kw...)
                             added_label = true
                         else
-                            lines!(ax, X, yy; linewidth=LINE_WIDTH)
+                            lines!(ax, X, yy; linewidth=LINE_WIDTH, linestyle=curve_ls, curve_kw...)
                         end
                         push!(ax_yvecs, Float64.(yy))
                     else
                         l = isnothing(lbl) ? "" :
                             (lbl isa AbstractVector ? "" : string(lbl))
+                        curve_ls = _curve_linestyle(ls, 1)
+                        curve_kw = isnothing(cc) ? (;) : (; color = _curve_color(cc, 1))
                         if l != ""
-                            lines!(ax, X, y; linewidth=LINE_WIDTH, label=l)
+                            lines!(ax, X, y; linewidth=LINE_WIDTH, label=l, linestyle=curve_ls, curve_kw...)
                             added_label = true
                         else
-                            lines!(ax, X, y; linewidth=LINE_WIDTH)
+                            lines!(ax, X, y; linewidth=LINE_WIDTH, linestyle=curve_ls, curve_kw...)
                         end
                         push!(ax_yvecs, Float64.(y))
                         break
                     end
                 end
                 xlims!(ax, first(X), last(X))
-                pos = (row_bumped[i] && legend_position === :auto) ? :rt :
-                      _resolve_corner(legend_position, X, ax_yvecs)
+                pos = (row_bumped[i] && lp === :auto) ? :rt :
+                      _resolve_corner(lp, X, ax_yvecs)
                 push!(legends_arr,
                       added_label ? axislegend(ax; position=pos, _legend_style(legendsize)...) :
                       nothing)

@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## v0.1.16 23-08-2026
+
+### Added
+- `linestyle` keyword to `plotx` — one entry per channel, the same
+  convention as `labels`/`ylabels`: a single style (e.g. `:dash`) applies to
+  every curve in that channel, or a vector gives one style per curve in a
+  multi-curve channel. `nothing` (the default, at either level) keeps
+  Makie's solid line. Persisted in `PlotX`, so a saved-and-reloaded plot
+  keeps its line styles.
+- `color` keyword to `plotx` — same per-channel/per-curve convention as
+  `linestyle`: a single color for the whole channel, or a vector giving one
+  color per curve. A `nothing` curve entry, or a channel left out of the
+  vector, keeps that curve on the default cycle. Render-only, like
+  `disp`/`new_screen`/`output_folder`: not a persisted `PlotX` field, so a
+  saved-and-reloaded plot redraws with the default cycle.
+- `legend_position` now also accepts a vector, one corner (`:auto`, `:lt`,
+  `:rt`, `:lb`, `:rb`) per channel, instead of only a single value applied
+  to every channel. A bare symbol still applies to all channels as before.
+
 ## v0.1.15 20-08-2026
 
 ### Fixed

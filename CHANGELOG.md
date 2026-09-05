@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## v0.1.17 05-09-2026
+
+### Added
+- `yticks` keyword to the twin-axis `plot(X, Y1, Y2)` methods — a single
+  number spaces ticks that many units apart, computed from each axis's own
+  data range; a `(spec1, spec2)` tuple gives each axis its own spec
+  independently (a step, an explicit tick collection, or `nothing` to leave
+  that axis on Makie's automatic ticks). Persisted in `PlotX`, so a
+  saved-and-reloaded plot keeps its tick spacing.
+
+### Changed
+- Twin-axis `plot(X, Y1, Y2)`: the secondary (right) y-axis no longer draws
+  its own horizontal gridlines, since they don't align with the primary
+  axis's gridlines and only added visual noise. The shared x-axis grid and
+  the primary y-axis grid are unaffected.
+
 ## v0.1.16 23-08-2026
 
 ### Added

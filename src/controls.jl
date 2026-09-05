@@ -6,6 +6,7 @@ const _LAST_SCREEN = Ref{Any}(nothing)
 const _SCREENS = Dict{String, Any}()
 const _CONTROLS_HEIGHT = 40
 const _DEFAULT_PLOTSIZE = (640, 480)
+const _GL_UNAVAILABLE = Ref(false)
 
 using Printf: @sprintf
 
@@ -563,7 +564,7 @@ function close(fig_name::String)
 end
 
 function _display_figure(fig::Figure, fig_name::String, new_screen::Bool)
-    if !(new_screen && Makie.current_backend() === GLMakie)
+    if _GL_UNAVAILABLE[] || !(new_screen && Makie.current_backend() === GLMakie)
         return display(fig)
     end
     title = isempty(fig_name) ? "Makie" : fig_name
@@ -573,7 +574,16 @@ function _display_figure(fig::Figure, fig_name::String, new_screen::Bool)
         display(existing, fig)
         return existing
     end
-    screen = GLMakie.Screen(; title)
+    local screen
+    try
+        screen = GLMakie.Screen(; title)
+    catch err
+        _GL_UNAVAILABLE[] = true
+        @warn "GLMakie could not create a window (no OpenGL context available); " *
+              "falling back to CairoMakie for the rest of this session" err
+        CairoMakie.activate!()
+        return display(fig)
+    end
     for k in collect(keys(_SCREENS))
         _SCREENS[k] === screen && delete!(_SCREENS, k)
     end

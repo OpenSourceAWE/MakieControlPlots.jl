@@ -152,6 +152,16 @@ function _corner_align(corner::Symbol)
     return (ha, va)
 end
 
+# Ticks spaced `step` apart, spanning the data range of `ys` (one or more
+# vectors), rounded outward to multiples of `step`.
+function _step_yticks(ys::AbstractVector{<:AbstractVector}, step)
+    ex = _finite_extrema(reduce(vcat, ys))
+    isnothing(ex) && return nothing
+    lo, hi = ex
+    return (floor(lo / step) * step):step:(ceil(hi / step) * step)
+end
+_step_yticks(y::AbstractVector{<:Number}, step) = _step_yticks([y], step)
+
 function _mouse_data(ax::Axis)
     mpos = Makie.mouseposition(ax.scene)
     inv_tf = Makie.inverse_transform(Makie.transform_func(ax.scene))

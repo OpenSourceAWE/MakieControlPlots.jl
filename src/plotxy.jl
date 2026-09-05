@@ -38,7 +38,7 @@ function plotxy(X::AbstractVector{<:Number}, Y::AbstractVector{<:Number}; xlabel
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", xticks, aspect, linestyle, nothing)
+                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", xticks, aspect, linestyle, nothing, nothing)
     if disp
         xscale_sym = xscale::Symbol
         builder = function(layout)
@@ -93,7 +93,7 @@ function plotxy(Xs::AbstractVector{<:AbstractVector},
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(Xs, Ys, legend, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", xticks, aspect, linestyle, nothing)
+                         xlims, ylims, ann, scatter, fig, 3, xlsize, :auto, legendsize, titlesize, xscale, grid, "", xticks, aspect, linestyle, nothing, nothing)
     if disp
         xscale_sym = xscale::Symbol
         builder = function(layout)

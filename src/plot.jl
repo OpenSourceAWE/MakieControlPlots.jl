@@ -43,7 +43,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
-                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing)
+                         xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, nothing)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -92,7 +92,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 4, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, nothing)
     if disp
         xscale_sym = xscale::Symbol
         builder = function(layout)
@@ -169,12 +169,12 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
               fig="", ysize=nothing, xsize=nothing, labelsize=16,
               legend_position=:auto, output_folder="output", disp=false,
               new_screen=true, legendsize=16, titlesize=18, xscale::Symbol=:identity, grid=true, label="",
-              xticks=nothing)
+              xticks=nothing, yticks=nothing)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, yticks)
     if disp
         xscale_sym = xscale::Symbol
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
@@ -195,6 +195,10 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             if !isnothing(xticks)
                 ax1.xticks = xticks
             end
+            yticks1 = yticks isa Tuple ? yticks[1] : yticks
+            if !isnothing(yticks1)
+                ax1.yticks = yticks1 isa Real ? _step_yticks(Y1, yticks1) : yticks1
+            end
             ax1.xgridvisible = grid
             ax1.ygridvisible = grid
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
@@ -208,11 +212,15 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             if !isnothing(xticks)
                 ax2.xticks = xticks
             end
+            yticks2 = yticks isa Tuple ? yticks[2] : yticks
+            if !isnothing(yticks2)
+                ax2.yticks = yticks2 isa Real ? _step_yticks(Y2, yticks2) : yticks2
+            end
             hidespines!(ax2)
             hidexdecorations!(ax2)
             linkxaxes!(ax1, ax2)
             ax2.xgridvisible = grid
-            ax2.ygridvisible = grid
+            ax2.ygridvisible = false
             l1 = lines!(ax1, X, Y1; linewidth=LINE_WIDTH, color=:green)
             l2 = lines!(ax2, X, Y2; linewidth=LINE_WIDTH, color=:red)
             if scatter
@@ -243,18 +251,18 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
               fig="", ysize=nothing, xsize=nothing, labelsize=16,
               legend_position=:auto, output_folder="output", disp=false,
               new_screen=true, legendsize=16, titlesize=18, xscale::Symbol=:identity, grid=true, label="",
-              xticks=nothing)
+              xticks=nothing, yticks=nothing)
     if length(Y1) == 1
         return plot(X, Y1[1], Y2; xlabel, ylabels, title, labels, xlims,
                     ylims, ann, scatter, fig, ysize, xsize, labelsize,
                     legend_position, output_folder, disp, new_screen,
-                    legendsize, titlesize, xscale, grid, label, xticks)
+                    legendsize, titlesize, xscale, grid, label, xticks, yticks)
     end
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, yticks)
     if disp
         xscale_sym = xscale::Symbol
         corner = _resolve_corner(legend_position, X,
@@ -275,6 +283,10 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             if !isnothing(xticks)
                 ax1.xticks = xticks
             end
+            yticks1 = yticks isa Tuple ? yticks[1] : yticks
+            if !isnothing(yticks1)
+                ax1.yticks = yticks1 isa Real ? _step_yticks(Y1, yticks1) : yticks1
+            end
             ax2 = Axis(layout[1, 1]; ylabel=string(ylabels[2]),
                        ylabelsize=ylsize, yaxisposition=:right,
                        backgroundcolor=RGBAf(0, 0, 0, 0),
@@ -285,11 +297,15 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             if !isnothing(xticks)
                 ax2.xticks = xticks
             end
+            yticks2 = yticks isa Tuple ? yticks[2] : yticks
+            if !isnothing(yticks2)
+                ax2.yticks = yticks2 isa Real ? _step_yticks(Y2, yticks2) : yticks2
+            end
             hidespines!(ax2)
             hidexdecorations!(ax2)
             linkxaxes!(ax1, ax2)
             ax2.xgridvisible = grid
-            ax2.ygridvisible = grid
+            ax2.ygridvisible = false
             colors = [:green, :grey, :red]
             lns = Any[]
             leg_labels = String[]

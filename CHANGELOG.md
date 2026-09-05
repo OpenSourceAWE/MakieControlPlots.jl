@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.1.18 05-09-2026
+
+### Added
+- `xticks` and `yticks` keywords to `plot2d`, forwarded through all methods
+  (`AbstractVector`/`AbstractMatrix` position input, with or without
+  segments) down to the underlying axis.
+
+### Fixed
+- On macOS, a `GLMakie.Screen` creation failure (no OpenGL context
+  available) is now caught: the backend falls back to CairoMakie for the
+  rest of the session instead of erroring out.
+
 ## v0.1.17 05-09-2026
 
 ### Added

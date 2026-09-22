@@ -138,7 +138,7 @@ plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       legend_position=:auto, output_folder="output", yzoom=1.0,
       disp=false, new_screen=true, legendsize=16, titlesize=18,
       xscale=:identity, grid=true, xticks=nothing, rowgap=18,
-      linestyle=nothing, color=nothing)
+      linestyle=nothing, color=nothing, yerr=nothing)
 ```
 
 The optional parameter `ysize` can be used to change the size of the y-axis
@@ -148,6 +148,19 @@ stacked subplots. The optional parameter `linestyle` sets a line style per
 channel (one entry per `Y...` channel, the same convention as `labels`/
 `ylabels`): a single style (e.g. `:dash`) applies to every curve in that
 channel, or a vector gives one style per curve in a multi-curve channel.
+The optional parameter `xlims` sets the x range shared by every channel;
+without it the stack clamps to the data range, which leaves no room for a
+marker or an error bar on the first or last sample.
+The optional parameter `yerr` draws error bars, one entry per channel: an error
+series the length of `X`, or `nothing` for a channel that has no uncertainty to
+show. Unlike `linestyle` and `color` it is never broadcast across channels — a
+bare numeric vector is the *first* channel's errors — and within a multi-curve
+channel it applies to the first curve.
+
+```julia
+plotx(u_s, c1, delay; ylabels=["c1", "delay [s]"],
+      yerr=[c1_std, delay_std], xlabel="depower [-]")
+```
 `nothing` (the default, at either level) keeps Makie's solid line.
 `legend_position` (`:auto`, or one of `:lt`/`:rt`/`:lb`/`:rb`) can likewise be
 a single corner applied to every channel, or a vector giving one corner (or
@@ -216,7 +229,7 @@ plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       legend_position=:auto, output_folder="output", yzoom=1.0,
       disp=false, new_screen=true, legendsize=16, titlesize=18,
       xscale=:identity, grid=true, xticks=nothing, rowgap=18,
-      linestyle=nothing, color=nothing)
+      linestyle=nothing, color=nothing, yerr=nothing)
 ```
 
 ### XY plot

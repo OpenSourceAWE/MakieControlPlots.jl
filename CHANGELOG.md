@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## v0.1.19 22-09-2026
+
+### Added
+- `yerr` keyword to `plotx` — draws error bars, one entry per channel, on the
+  same convention as `ylabels`: an error series the length of `X`, or
+  `nothing` for a channel with no uncertainty to show. Unlike `linestyle` and
+  `color` it is never broadcast across channels (a bare numeric vector is the
+  *first* channel's errors), and within a multi-curve channel it applies to
+  the first curve only. Persisted in `PlotX`, so a saved-and-reloaded plot
+  keeps its error bars.
+- `xlims` now actually takes effect in `plotx`: previously every panel's x
+  range was silently clamped to the data range regardless of the `xlims`
+  argument, leaving no room for a marker or an error bar sitting on the first
+  or last sample.
+
+### Fixed
+- `plotx` axis and x-axis labels passed as a `LaTeXString` were stringified
+  with `string`, which turns a `LaTeXString` into a plain `String` holding
+  literal `$...$` text instead of typeset math — the same trap the twin-axis
+  legend labels hit in v0.1.14. Non-string labels (a `Symbol`, a number) are
+  still stringified as before.
+
 ## v0.1.18 05-09-2026
 
 ### Added

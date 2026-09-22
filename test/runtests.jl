@@ -345,6 +345,80 @@ Y = X .^ 2
         end
     end
 
+    @testset "plotx yerr" begin
+        import CairoMakie, Makie
+        import Makie: GridLayout, FileIO
+        import MakieControlPlots: _channel_yerr, _export_figure, _LAST_BUILDER
+
+        E = fill(0.05, length(X))
+
+        # Per-channel selection: a vector picks per channel, a bare numeric
+        # vector is channel 1 only, and nothing anywhere means no bars.
+        @test _channel_yerr(nothing, 1) === nothing
+        @test _channel_yerr([E, nothing], 1) === E
+        @test _channel_yerr([E, nothing], 2) === nothing
+        @test _channel_yerr([E], 2) === nothing
+        @test _channel_yerr(E, 1) === E
+        @test _channel_yerr(E, 2) === nothing
+
+        # An error series must actually change the rendering -- a silently
+        # ignored yerr would otherwise pass every other test here.
+        CairoMakie.activate!()
+        mktempdir() do dir
+            plotx(X, Y, 2 .* Y; ylabels=["a","b"], disp=true)
+            plain = joinpath(dir, "plain.png")
+            _export_figure(plain, _LAST_BUILDER[])
+
+            plotx(X, Y, 2 .* Y; ylabels=["a","b"], yerr=[E, nothing], disp=true)
+            barred = joinpath(dir, "barred.png")
+            _export_figure(barred, _LAST_BUILDER[])
+
+            @test isfile(plain) && isfile(barred)
+            @test FileIO.load(plain) != FileIO.load(barred)
+        end
+
+        # `yerr` is a persisted `PlotX` field, unlike `color`/`linestyle`.
+        mktempdir() do dir
+            p = plotx(X, Y, 2 .* Y; ylabels=["a", "b"], yerr=[E, nothing])
+            file = joinpath(dir, "yerr.jld2")
+            MakieControlPlots.save(file, p)
+            p2 = MakieControlPlots.load(file)
+            @test p2.yerr == [E, nothing]
+        end
+
+        # The twin-axis and multi-curve paths draw bars too, and must not throw.
+        mktempdir() do dir
+            plotx(X, [Y, 30 .* Y], 2 .* Y;
+                  ylabels=[["left","right"], "c"], yerr=[E, E], disp=true)
+            png = joinpath(dir, "twin.png")
+            _export_figure(png, _LAST_BUILDER[])
+            @test isfile(png)
+            @test filesize(png) > 1024
+        end
+    end
+
+    @testset "plotx xlims" begin
+        import CairoMakie, Makie
+        import MakieControlPlots: _xrange, _export_figure, _LAST_BUILDER, _LAST_AXES
+
+        @test _xrange(nothing, X) == (first(X), last(X))
+        @test _xrange((-1.0, 2.0), X) == (-1.0, 2.0)
+
+        # The kwarg was accepted and stored but never applied before, so assert
+        # on the axis limits rather than only on the helper.
+        CairoMakie.activate!()
+        plotx(X, Y; ylabels=["a"], xlims=(-1.0, 2.0), disp=true)
+        lims = _LAST_AXES[][1].finallimits[]
+        @test lims.origin[1] ≈ -1.0
+        @test lims.origin[1] + lims.widths[1] ≈ 2.0
+
+        # ... and without it the panel still clamps to the data range.
+        plotx(X, Y; ylabels=["a"], disp=true)
+        lims = _LAST_AXES[][1].finallimits[]
+        @test lims.origin[1] ≈ first(X)
+        @test lims.origin[1] + lims.widths[1] ≈ last(X)
+    end
+
     @testset "install_examples" begin
         mktempdir() do dir
             cd(dir) do

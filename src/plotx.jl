@@ -110,6 +110,19 @@ end
 # since the marker rides along in a field that already exists.
 _is_twin_ylabel(l) = (l isa AbstractVector || l isa Tuple) && length(l) == 2
 
+# Axis labels are handed to Makie as they came in when they are already strings,
+# and only stringified otherwise (a Symbol, a number). `string` on a
+# `LaTeXString` returns a plain `String` holding `$...$`, which Makie then draws
+# as literal dollar-sign text instead of typesetting it -- the same trap the
+# legend labels below document.
+_axis_label(l) = l isa AbstractString ? l : string(l)
+
+# The stack's x range: the `xlims` the caller asked for, else the data range.
+# Every panel gets the same one -- they share the x axis -- and a caller who
+# passes `xlims` usually wants room that the data range does not leave, such as
+# space for an error bar or a marker sitting on the last sample.
+_xrange(xlims, X) = isnothing(xlims) ? (first(X), last(X)) : (xlims[1], xlims[2])
+
 # `linestyle`, one entry per channel (mirroring `labels`/`ylabels`): that
 # entry is a single style applied to every curve in the channel, or, for a
 # multi-curve channel, a vector of per-curve styles. A missing/`nothing`
@@ -142,6 +155,28 @@ _curve_color(color, j) =
         ((j <= length(color) && !isnothing(color[j])) ? color[j] : _cycle_color(j)) :
         color)
 
+# `yerr`, one entry per channel, in the same shape as `ylabels`: a vector gives
+# one error series (or `nothing`) per channel, and a bare numeric vector is the
+# first channel's errors. It is NOT broadcast to every channel the way a scalar
+# `linestyle` or `color` is — error bars are data, not style, and a channel that
+# did not supply an uncertainty must not be drawn wearing another channel's.
+# Unlike `color`, this is a persisted `PlotX` field, so a saved-and-reloaded
+# plot keeps its error bars.
+_channel_yerr(yerr_all, i) =
+    isnothing(yerr_all) ? nothing :
+    yerr_all isa AbstractVector{<:Number} ? (i == 1 ? yerr_all : nothing) :
+    (i <= length(yerr_all) ? yerr_all[i] : nothing)
+
+# Error bars for the FIRST curve of a channel only: `yerr` carries one series
+# per channel, so there is nothing to attach to a second curve. Drawn in the
+# curve's own color, and skipped entirely for a `nothing` entry.
+function _draw_errorbars!(ax, X, y, err, col)
+    isnothing(err) && return nothing
+    errorbars!(ax, X, y, err; whiskerwidth=10,
+               color=isnothing(col) ? :black : col)
+    return nothing
+end
+
 # One channel's curves as a plain vector, whether it was passed as a single
 # time series, a vector of them, or a tuple of them.
 _channel_curves(y) = y isa AbstractVector{<:Number} ? Any[y] : collect(y)
@@ -159,12 +194,12 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                legend_position=:auto, output_folder="output", yzoom=1.0,
                disp=false, new_screen=true, legendsize=16, titlesize=18,
                xscale::Symbol=:identity, grid=true, xticks=nothing, rowgap=18,
-               linestyle=nothing, color=nothing)
+               linestyle=nothing, color=nothing, yerr=nothing)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
-                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, linestyle, rowgap, nothing)
+                         legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, linestyle, rowgap, nothing, yerr)
     if disp
         n = length(Y)
         base_row_h = round(Int, 2 * yzoom * 96)
@@ -206,7 +241,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 ax.xgridvisible = grid
                 ax.ygridvisible = grid
                 if !isnothing(ylbl)
-                    ax.ylabel = string(_is_twin_ylabel(ylbl) ? ylbl[1] : ylbl)
+                    ax.ylabel = _axis_label(_is_twin_ylabel(ylbl) ? ylbl[1] : ylbl)
                 end
                 push!(axes_arr, ax)
                 lbl = nothing
@@ -216,8 +251,9 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 ls = _channel_linestyle(linestyle, i)
                 lp = _channel_legend_position(legend_position, i)
                 cc = _channel_color(color, i)
+                ye = _channel_yerr(yerr, i)
                 if twin
-                    ax2 = Axis(layout[i, 1]; ylabel=string(ylbl[2]),
+                    ax2 = Axis(layout[i, 1]; ylabel=_axis_label(ylbl[2]),
                                ylabelsize=ylsize, yaxisposition=:right,
                                backgroundcolor=RGBAf(0, 0, 0, 0),
                                xscale=_xscale_func(xscale))
@@ -248,6 +284,8 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                         ln = lines!(target, X, yy; linewidth=LINE_WIDTH,
                                     color=_curve_color(cc, j),
                                     linestyle=_curve_linestyle(ls, j))
+                        j == 1 && _draw_errorbars!(target, X, yy, ye,
+                                                   _curve_color(cc, j))
                         l = (lbl isa AbstractVector && j <= length(lbl)) ?
                             string(lbl[j]) : ""
                         if l != ""
@@ -265,8 +303,8 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     if length(curves) == 2
                         ax.ylabelcolor = ax.yticklabelcolor = _cycle_color(1)
                     end
-                    xlims!(ax, first(X), last(X))
-                    xlims!(ax2, first(X), last(X))
+                    xlims!(ax, _xrange(xlims, X)...)
+                    xlims!(ax2, _xrange(xlims, X)...)
                     if isempty(lns)
                         push!(legends_arr, nothing)
                     else
@@ -304,6 +342,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                         else
                             lines!(ax, X, yy; linewidth=LINE_WIDTH, linestyle=curve_ls, curve_kw...)
                         end
+                        j == 1 && _draw_errorbars!(ax, X, yy, ye, isnothing(cc) ? nothing : _curve_color(cc, 1))
                         push!(ax_yvecs, Float64.(yy))
                     else
                         l = isnothing(lbl) ? "" :
@@ -316,11 +355,12 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                         else
                             lines!(ax, X, y; linewidth=LINE_WIDTH, linestyle=curve_ls, curve_kw...)
                         end
+                        _draw_errorbars!(ax, X, y, ye, isnothing(cc) ? nothing : _curve_color(cc, 1))
                         push!(ax_yvecs, Float64.(y))
                         break
                     end
                 end
-                xlims!(ax, first(X), last(X))
+                xlims!(ax, _xrange(xlims, X)...)
                 pos = (row_bumped[i] && lp === :auto) ? :rt :
                       _resolve_corner(lp, X, ax_yvecs)
                 push!(legends_arr,
@@ -338,7 +378,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 hidexdecorations!(axes_arr[i]; grid=false, ticks=false)
             end
             if !isempty(axes_arr)
-                axes_arr[end].xlabel = string(xlabel)
+                axes_arr[end].xlabel = _axis_label(xlabel)
                 axes_arr[end].xlabelsize = xlsize
             end
             # Channel axes first, twins after: the interactive controls act on

@@ -87,10 +87,11 @@ mutable struct PlotX
     linestyle
     rowgap
     yticks
+    yerr
 end
 
 # Serialization format version — bump when adding/removing fields
-const _PLOTX_SERIAL_VERSION = 7
+const _PLOTX_SERIAL_VERSION = 8
 
 # ── Migration-safe save/load ────────────────────────────────────────────────
 # Instead of raw struct serialization we use a versioned Dict.
@@ -130,6 +131,7 @@ function save(filename::String, p::PlotX)
         :linestyle   => p.linestyle,
         :rowgap      => p.rowgap,
         :yticks      => p.yticks,
+        :yerr        => p.yerr,
     )
     JLD2.save(filename, "plot", data)
 end
@@ -168,6 +170,7 @@ function JLD2.rconvert(::Type{PlotX}, nt::NamedTuple)
         get(nt, :linestyle,           nothing),
         get(nt, :rowgap,              18),
         get(nt, :yticks,              nothing),
+        get(nt, :yerr,                nothing),
     )
 end
 
@@ -207,6 +210,7 @@ function _reconstruct_plotx(d::Dict)
         get(d, :linestyle,           nothing),
         get(d, :rowgap,              18),
         get(d, :yticks,              nothing),
+        get(d, :yerr,                nothing),
     )
 end
 
@@ -289,7 +293,7 @@ function Base.display(p::PlotX; new_screen=true)
               xsize=p.xsize, legend_position=p.legend_position,
               yzoom=p.yzoom, legendsize=p.legendsize, disp=true, new_screen,
               titlesize=p.titlesize, xscale=p.xscale, grid=p.grid,
-              xticks=p.xticks, rowgap=p.rowgap)
+              xticks=p.xticks, rowgap=p.rowgap, yerr=p.yerr)
     elseif p.type == 3
         if p.X isa AbstractVector{<:AbstractVector}
             plotxy(p.X, p.Y; xlabel=p.xlabel, ylabel=p.ylabels, title=p.title,

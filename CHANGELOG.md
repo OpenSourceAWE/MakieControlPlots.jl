@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## v0.1.20 07-10-2026
+
+### Added
+- `phase_offset` keyword to `bode_plot` [deg], added to the phase. `bode`
+  unwraps the phase from the lowest frequency, so a loop with integrators or
+  unstable poles can land a multiple of 360° away from the usual range;
+  `phase_offset=-360` moves it back, so the margins are read at -180°.
+- `ref_lines` keyword to `bode_plot`: dotted reference lines at 0 dB and
+  -180°, a dashed vertical line at each gain crossover, and the phase and gain
+  margins as solid black lines labelled with their values (`Pm` in degrees,
+  `Gm` in dB, negative for a lower gain margin).
+- `xticks` keyword to `bode_plot`, setting the frequency ticks of both axes.
+- `ann` keyword to `plotx` now takes effect: one entry per channel, `nothing`,
+  one `(x, y, text)` or a vector of them. A number `y` places the text at
+  `(x, y)`; a pair `y = (y1, y2)` draws a solid black vertical line from `y1`
+  to `y2`, e.g. to mark a margin, with the text right of its midpoint.
+  Previously the keyword was accepted but ignored.
+- `ylims` keyword to `plotx` now takes effect: one `(lo, hi)` pair, or
+  `nothing` for automatic limits, per channel. Previously it was accepted but
+  ignored.
+
+### Fixed
+- `plotx` with `xscale=:log10` failed when `xticks` was given as a
+  `(values, labels)` pair: the log axis replaced the tick format, which Makie
+  does not accept together with explicit labels.
+
 ## v0.1.19 22-09-2026
 
 ### Added

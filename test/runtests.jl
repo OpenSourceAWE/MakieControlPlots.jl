@@ -107,6 +107,25 @@ Y = X .^ 2
         @test axs[1].yaxisposition[] == :left
     end
 
+    @testset "plotx ylims and labelled log ticks" begin
+        import MakieControlPlots: _LAST_BUILDER, _extract_axes
+        import Makie: GridLayout
+
+        f = exp10.(range(-2, 0; length=50))
+        plotx(f, f, 2 .* f; ylims=[(0, 3), nothing], xscale=:log10,
+              xticks=([0.01, 0.1, 1.0], ["0.01", "0.1", "1"]), disp=true)
+        axs = _extract_axes(_LAST_BUILDER[](GridLayout(Figure()[1, 1])))
+        @test axs[1].limits[][2] == (0, 3)
+        @test isnothing(axs[2].limits[][2])
+        @test axs[1].xticks[] == ([0.01, 0.1, 1.0], ["0.01", "0.1", "1"])
+
+        # A line with its label in the second channel, a bare text in the first.
+        plotx(f, f, 2 .* f; ann=[(0.1, 0.5, "a"), (0.1, (0.0, 0.2), "b")], disp=true)
+        axs = _extract_axes(_LAST_BUILDER[](GridLayout(Figure()[1, 1])))
+        @test count(p -> p isa Makie.Text, axs[1].scene.plots) == 1
+        @test count(p -> p isa Makie.Lines, axs[2].scene.plots) == 2
+    end
+
     @testset "plotx twin y-axis needs two curves" begin
         import MakieControlPlots: _LAST_BUILDER, _extract_axes
         import Makie: GridLayout

@@ -151,6 +151,16 @@ channel, or a vector gives one style per curve in a multi-curve channel.
 The optional parameter `xlims` sets the x range shared by every channel;
 without it the stack clamps to the data range, which leaves no room for a
 marker or an error bar on the first or last sample.
+The optional parameter `ylims` sets the y range per channel: a vector with one
+`(lo, hi)` pair, or `nothing` for automatic limits, per channel, e.g.
+`ylims=[(0, 2), nothing]`.
+The optional parameter `ann` annotates channels, one entry per channel: `nothing`,
+one `(x, y, text)` or a vector of them. A number `y` places the text at `(x, y)`;
+a pair `y = (y1, y2)` draws a solid black vertical line from `y1` to `y2` at `x`,
+e.g. to mark a margin, with the text right of its midpoint:
+`ann=[nothing, (0.14, (0, 28.4), "±28.4°")]`.
+With `xscale=:log10`, `xticks` may also be a `(values, labels)` pair, e.g.
+`xticks=([0.01, 0.1, 1], ["0.01", "0.1", "1"])`.
 The optional parameter `yerr` draws error bars, one entry per channel: an error
 series the length of `X`, or `nothing` for a channel that has no uncertainty to
 show. Unlike `linestyle` and `color` it is never broadcast across channels — a

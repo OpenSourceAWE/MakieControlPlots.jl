@@ -167,6 +167,31 @@ _channel_yerr(yerr_all, i) =
     yerr_all isa AbstractVector{<:Number} ? (i == 1 ? yerr_all : nothing) :
     (i <= length(yerr_all) ? yerr_all[i] : nothing)
 
+# `ylims`, one entry per channel: a `(lo, hi)` pair, or `nothing` to keep
+# Makie's automatic limits. A twin channel applies it to its left axis.
+_channel_ylims(ylims_all, i) =
+    (!isnothing(ylims_all) && i <= length(ylims_all)) ? ylims_all[i] : nothing
+
+# `ann`, one entry per channel: `nothing`, one annotation `(x, y, text)` or a
+# vector of them. With a number `y` the text is placed at `(x, y)`; with a pair
+# `y = (y1, y2)` a solid black line is drawn from `(x, y1)` to `(x, y2)`, e.g. a
+# margin, and the text is placed right of its midpoint. `text` may be a string or
+# rich text.
+_channel_ann(ann_all, i) =
+    (!isnothing(ann_all) && i <= length(ann_all)) ? ann_all[i] : nothing
+function _draw_ann!(ax, ann, fontsize)
+    isnothing(ann) && return nothing
+    for (x, y, txt) in (ann isa Tuple ? (ann,) : ann)
+        if y isa Tuple
+            lines!(ax, [x, x], [y...]; color=:black, linewidth=2)
+            text!(ax, x, (y[1] + y[2]) / 2; text=txt, align=(:left, :center), offset=(6, 0), fontsize)
+        else
+            text!(ax, x, y; text=txt, fontsize)
+        end
+    end
+    return nothing
+end
+
 # Error bars for the FIRST curve of a channel only: `yerr` carries one series
 # per channel, so there is nothing to attach to a second curve. Drawn in the
 # curve's own color, and skipped entirely for a `nothing` entry.
@@ -232,7 +257,9 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                           titlesize=titlesize,
                           titlefont=TITLE_FONT,
                           xscale=_xscale_func(xscale))
-                if (xscale_sym::Symbol) == :log10
+                # Ticks given as `(values, labels)` bring their own labels, and Makie
+                # takes them only with its default formatter.
+                if (xscale_sym::Symbol) == :log10 && !(xticks isa Tuple)
                     ax.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
                 end
                 if !isnothing(xticks)
@@ -257,7 +284,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                                ylabelsize=ylsize, yaxisposition=:right,
                                backgroundcolor=RGBAf(0, 0, 0, 0),
                                xscale=_xscale_func(xscale))
-                    if (xscale_sym::Symbol) == :log10
+                    if (xscale_sym::Symbol) == :log10 && !(xticks isa Tuple)
                         ax2.xtickformat = xs -> [string(round(x, digits=1)) for x in xs]
                     end
                     if !isnothing(xticks)
@@ -305,6 +332,9 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     end
                     xlims!(ax, _xrange(xlims, X)...)
                     xlims!(ax2, _xrange(xlims, X)...)
+                    yl = _channel_ylims(ylims, i)
+                    isnothing(yl) || ylims!(ax, yl...)
+                    _draw_ann!(ax, _channel_ann(ann, i), ylsize)
                     if isempty(lns)
                         push!(legends_arr, nothing)
                     else
@@ -361,6 +391,9 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     end
                 end
                 xlims!(ax, _xrange(xlims, X)...)
+                yl = _channel_ylims(ylims, i)
+                isnothing(yl) || ylims!(ax, yl...)
+                _draw_ann!(ax, _channel_ann(ann, i), ylsize)
                 pos = (row_bumped[i] && lp === :auto) ? :rt :
                       _resolve_corner(lp, X, ax_yvecs)
                 push!(legends_arr,

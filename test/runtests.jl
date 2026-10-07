@@ -225,7 +225,18 @@ Y = X .^ 2
         sys = ControlSystemsBase.tf([1.0], [1.0, 1.0])
         bp = MakieControlPlots.bode_plot(sys; from=-2, to=2, title="lpf")
         @test bp.fig == ""
-        MakieControlPlots.bode_plot(sys; from=-2, to=2, title="lpf", disp=true)
+        @test bp.phase_offset == 0.0 && !bp.ref_lines
+        bp2 = MakieControlPlots.bode_plot(sys; phase_offset=-360, ref_lines=true)
+        @test bp2.phase_offset == -360.0 && bp2.ref_lines
+        ext = Base.get_extension(MakieControlPlots, :MakieControlPlotsControlSystemsBaseExt)
+        w = exp10.(range(-2, 2; length=401))
+        wc = ext._gain_crossovers(w, 1 ./ w)   # |1/(jω)| = 1 at ω = 1
+        @test length(wc) == 1 && isapprox(wc[1], 1.0; rtol=1e-6)
+        wp = ext._phase_crossovers(w, -90 .- 90 .* log10.(w))   # -180° at ω = 1
+        @test length(wp) == 1 && isapprox(wp[1], 1.0; rtol=1e-6)
+        MakieControlPlots.bode_plot(sys; from=-2, to=2, title="lpf", disp=true,
+                                    phase_offset=-360, ref_lines=true,
+                                    xticks=([0.1, 1.0], ["0.1", "1"]))
         mktempdir() do dir
             png = joinpath(dir, "bode.png")
             _export_figure(png, _LAST_BUILDER[])

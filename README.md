@@ -365,8 +365,20 @@ Full function signature:
 bode_plot(sys::Union{StateSpace, TransferFunction}; title="",
           from=-1, to=1, fig="", db=true, hz=true, bw=false,
           linestyle=:solid, show_title=true, fontsize=18,
-          output_folder="output", disp=false, new_screen=true)
+          output_folder="output", disp=false, new_screen=true,
+          phase_offset=0.0, ref_lines=false, xticks=nothing)
 ```
+
+`phase_offset` [deg] is added to the phase. `bode` unwraps the phase starting from
+the lowest frequency, so a loop with integrators or unstable poles can end up a
+multiple of 360° away from the usual range; `phase_offset=-360` moves it back, so
+that the margins are read at -180°. `ref_lines=true` draws dotted lines at 0 dB
+and -180°, and a dashed vertical line where the magnitude drops below 0 dB (the gain
+crossover), with the phase margin as a solid black line from -180° to the phase there, labelled
+with its value, and the gain margin as a solid black line from 0 dB to the magnitude
+at each -180° crossing of the phase, labelled with its value in dB (negative for a
+lower gain margin). `xticks` sets the frequency ticks of both
+axes, in Makie's format, e.g. `xticks=([0.01, 0.1, 1], ["0.01", "0.1", "1"])`.
 
 For using this function you need to do `using ControlSystemsBase` first, because
 this is a package extension.

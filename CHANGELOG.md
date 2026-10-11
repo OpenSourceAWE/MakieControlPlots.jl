@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.1.21 - unreleased
+## v0.1.21 11-10-2026
 
 ### Fixed
 - `plot2d` with several `fig` names: after closing the windows, a new call

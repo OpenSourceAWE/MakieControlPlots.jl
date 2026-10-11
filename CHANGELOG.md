@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.1.21 - unreleased
+
+### Fixed
+- `plot2d` with several `fig` names: after closing the windows, a new call
+  could show only one of the figures. GLMakie reuses the screens of closed
+  windows, so the screen of one figure could be handed to another figure; it
+  was then open, so the first figure was not rebuilt and its updates were drawn
+  into a figure that was no longer displayed. Now `plot2d` rebuilds a figure if
+  its screen is no longer registered for its `fig` name, without closing the
+  screen, which belongs to the other figure.
+
 ## v0.1.20 07-10-2026
 
 ### Added

@@ -80,15 +80,21 @@ function _plot2d_impl(pos, seg, reltime; zoom, front, segments, fig,
     label_relative = zoom && isnothing(xy)
 
     state = get(_PLOT2D_STATES, key, nothing)
+    # GLMakie reuses the screens of closed windows: after its window was closed, the screen of
+    # this figure may have been handed to another figure, so it is open, but shows the other one
+    screen_reused = state !== nothing && state.screen isa GLMakie.Screen &&
+                    get(_SCREENS, key, nothing) !== state.screen
     must_rebuild = state === nothing ||
                    state.num_segs != num_segs_needed ||
                    state.front != front ||
                    state.zoom != zoom ||
                    state.label_relative != label_relative ||
-                   (state.screen !== nothing && !isopen(state.screen))
+                   (state.screen !== nothing && !isopen(state.screen)) ||
+                   screen_reused
 
     if must_rebuild
-        if state !== nothing && state.screen !== nothing
+        # a reused screen belongs to another figure now and must not be closed
+        if state !== nothing && state.screen !== nothing && !screen_reused
             try
                 close(state.screen)
             catch

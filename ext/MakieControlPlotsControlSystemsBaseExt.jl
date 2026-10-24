@@ -44,7 +44,7 @@ end
 function _phase_crossovers(w, phase)
     d = phase .+ 180
     return [exp10(log10(w[i]) + d[i] / (d[i] - d[i + 1]) * log10(w[i + 1] / w[i]))
-            for i in 1:length(w) - 1 if d[i] != d[i + 1] && sign(d[i]) != sign(d[i + 1])]
+            for i in 1:length(w) - 1 if (d[i] >= 0 && d[i + 1] < 0) || (d[i] <= 0 && d[i + 1] > 0)]
 end
 
 # `y` at the frequency `f`, interpolated linearly over log(frequency) on the grid `w`.

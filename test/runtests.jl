@@ -2,6 +2,7 @@ using Test
 using MakieControlPlots
 using MakieControlPlots: PlotX
 using JLD2
+import Makie
 import Makie: Figure
 Base.display(::Figure) = nothing
 
@@ -251,7 +252,7 @@ Y = X .^ 2
         w = exp10.(range(-2, 2; length=401))
         wc = ext._gain_crossovers(w, 1 ./ w)   # |1/(jω)| = 1 at ω = 1
         @test length(wc) == 1 && isapprox(wc[1], 1.0; rtol=1e-6)
-        wp = ext._phase_crossovers(w, -90 .- 90 .* log10.(w))   # -180° at ω = 1
+        wp = ext._phase_crossovers(w, -180 .- 90 .* log10.(w))   # -180° at ω = 1
         @test length(wp) == 1 && isapprox(wp[1], 1.0; rtol=1e-6)
         MakieControlPlots.bode_plot(sys; from=-2, to=2, title="lpf", disp=true,
                                     phase_offset=-360, ref_lines=true,

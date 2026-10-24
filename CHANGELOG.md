@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.1.22 24-10-2026
+
+### Changed
+- Supported Julia versions are now 1.12 and 1.13; Julia 1.11 is no longer
+  supported. CI tests on 1.12 and 1.13.
+
+### Fixed
+- `bode_plot` with `ref_lines=true`: a phase that crossed -180° exactly at a
+  frequency grid point was counted twice, so the gain margin line and label
+  were drawn twice.
+
 ## v0.1.21 11-10-2026
 
 ### Fixed

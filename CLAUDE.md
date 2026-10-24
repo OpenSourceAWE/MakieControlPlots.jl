@@ -41,7 +41,7 @@ suite is small enough that it's normally run in full. `test/ttfp.jl` is a
 standalone time-to-first-plot benchmark, run directly with `time ./test/ttfp.jl`,
 not part of `Pkg.test()`.
 
-CI (`.github/workflows/CI.yml`) runs on Julia 1.11 and 1.12 under `xvfb-run`
+CI (`.github/workflows/CI.yml`) runs on Julia 1.12 and 1.13 under `xvfb-run`
 (GLMakie needs a display even for "headless" tests).
 
 ## Architecture

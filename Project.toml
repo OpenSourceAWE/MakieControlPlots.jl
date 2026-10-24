@@ -1,6 +1,6 @@
 name = "MakieControlPlots"
 uuid = "6d616b69-6563-4f6e-8472-6f6c706c6f74"
-version = "0.1.21"
+version = "0.1.22"
 authors = ["Bart van de Lint <bart@vandelint.net>", "Uwe Fechner"]
 
 [workspace]
@@ -32,7 +32,7 @@ GridLayoutBase = "0.11"
 JLD2 = "0.5, 0.6"
 LaTeXStrings = "1"
 Makie = "0.23, 0.24"
-Pkg = "1.11, 1.12"
+Pkg = "1.12, 1.13"
 PrecompileTools = "1"
 StaticArraysCore = "1"
-julia = "1.11, 1.12"
+julia = "1.12, 1.13"

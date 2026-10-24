@@ -32,3 +32,41 @@ jobs:
 
       - name: Run tests (virtual framebuffer)
         run: xvfb-run julia --project -e 'using Pkg; Pkg.test()'
+  # bin/install with the tracked default manifests, and the tests with exactly
+  # the package versions it installed
+  install:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        julia-version:
+          - "1.12"
+          - "1.13"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: ${{ matrix.julia-version }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglfw3
+
+      - uses: julia-actions/cache@v3
+
+      - name: Help text
+        run: bin/install -h
+
+      - name: Install (virtual framebuffer)
+        run: xvfb-run -a bin/install -y
+
+      - name: Run tests (virtual framebuffer)
+        run: |
+          xvfb-run -a julia -e 'using Pkg; Pkg.activate("."); Pkg.test()'
+          manifest="Manifest-v${{ matrix.julia-version }}.toml"
+          if ! cmp -s "$manifest" "$manifest.default"; then
+              echo "The tests changed $manifest, so they did not use the default manifest:"
+              diff "$manifest.default" "$manifest" || true
+              exit 1
+          fi

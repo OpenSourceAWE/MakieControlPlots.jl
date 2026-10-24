@@ -1,0 +1,115 @@
+#!/bin/bash -eu
+# SPDX-FileCopyrightText: 2026 Uwe Fechner
+# SPDX-License-Identifier: MIT
+
+if [[ $(basename "$(pwd)") == "bin" ]]; then
+    cd ..
+fi
+
+print_usage() {
+    cat <<'USAGE'
+Usage: bin/update_default_manifests [-y] [-h|--help]
+
+For developers, before a release: update every package to its latest version,
+separately for each supported Julia version, and run the tests under each of
+them. Only if all tests pass are the updated manifests copied to the tracked
+Manifest-v<version>.toml.default files (created if missing) and committed; if
+any test fails, the script terminates and leaves the defaults alone.
+
+The supported Julia versions are the entries of the julia compat in
+Project.toml, e.g. julia = "1.12, 1.13". Each of them has to be installed with
+juliaup. The packages of examples/ and test/ are updated too: they belong to
+the workspace of Project.toml and share its manifest.
+
+The tests need a display for GLMakie; without one, they run under xvfb-run.
+
+  -y          do not ask before updating, testing and committing
+  -h, --help  show this message
+USAGE
+}
+
+assume_yes=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -y) assume_yes=true ;;
+        -h|--help) print_usage; exit 0 ;;
+        *) echo "update_default_manifests: unknown option $1" >&2; print_usage >&2; exit 1 ;;
+    esac
+    shift
+done
+
+compat=$(sed -n '/^\[compat\]/,/^\[/s/^julia *= *"\(.*\)"/\1/p' Project.toml)
+IFS=', ' read -r -a versions <<< "$compat"
+for version in "${versions[@]}"; do
+    if ! [[ $version =~ ^[0-9]+\.[0-9]+$ ]]; then
+        echo "update_default_manifests: cannot read the Julia versions from" \
+             "julia = \"$compat\" in Project.toml; expected e.g. \"1.12, 1.13\"." >&2
+        exit 1
+    fi
+done
+if [[ ${#versions[@]} -eq 0 ]]; then
+    echo "update_default_manifests: no julia compat in Project.toml." >&2
+    exit 1
+fi
+
+missing=()
+for version in "${versions[@]}"; do
+    on_machine=$(julia "+$version" --startup-file=no \
+        -e 'print(VERSION.major, ".", VERSION.minor)' 2>/dev/null) || on_machine=""
+    [[ $on_machine == "$version" ]] || missing+=("$version")
+done
+if [[ ${#missing[@]} -gt 0 ]]; then
+    echo "update_default_manifests: no Julia ${missing[*]} on this machine;" \
+         "juliaup add what is missing." >&2
+    exit 1
+fi
+
+xvfb=()
+if [[ -z ${DISPLAY:-} && -z ${WAYLAND_DISPLAY:-} ]]; then
+    if ! command -v xvfb-run > /dev/null; then
+        echo "update_default_manifests: no display and no xvfb-run; GLMakie needs one" \
+             "of them for the tests." >&2
+        exit 1
+    fi
+    xvfb=(xvfb-run -a)
+fi
+
+if ! $assume_yes; then
+    read -r -p "Update every package, test and commit the defaults of ${versions[*]}? [y/N] " \
+        reply
+    case "$reply" in
+        [yY]*) ;;
+        *) echo "update_default_manifests: nothing updated."; exit 1 ;;
+    esac
+fi
+
+export JULIA_PKG_SERVER_REGISTRY_PREFERENCE=eager
+
+for version in "${versions[@]}"; do
+    manifest="Manifest-v$version.toml"
+    # Pkg resolves into Manifest.toml unless the versioned name is already a file
+    [[ -f $manifest ]] || : > "$manifest"
+    echo "update_default_manifests: updating and testing under Julia $version"
+    # Load Pkg before activating the project: with --project and an empty manifest,
+    # Julia 1.12 fails with a KeyError, because this package depends on Pkg.
+    julia "+$version" --startup-file=no -e 'using Pkg; Pkg.activate("."); Pkg.update()'
+    if ! "${xvfb[@]}" julia "+$version" --startup-file=no \
+            -e 'using Pkg; Pkg.activate("."); Pkg.test()'; then
+        echo "update_default_manifests: tests failed under Julia $version;" \
+             "the defaults are unchanged." >&2
+        exit 1
+    fi
+done
+
+defaults=()
+for version in "${versions[@]}"; do
+    cp "Manifest-v$version.toml" "Manifest-v$version.toml.default"
+    defaults+=("Manifest-v$version.toml.default")
+done
+
+git add -- "${defaults[@]}"
+if git diff --cached --quiet -- "${defaults[@]}"; then
+    echo "update_default_manifests: the defaults are already up to date."
+    exit 0
+fi
+git commit -m "Update the default manifests" -- "${defaults[@]}"

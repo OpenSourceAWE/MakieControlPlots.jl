@@ -1,10 +1,28 @@
 # CHANGELOG
 
-## v0.1.22 24-10-2026
+## v0.1.22 25-10-2026
+
+### Added
+- Default manifests `Manifest-v1.12.toml.default` and
+  `Manifest-v1.13.toml.default` with the tested package versions.
+- `bin/update_default_manifests`: updates all packages for each supported Julia
+  version, runs the tests and, if they pass, commits the new default manifests.
+- CI job that runs `bin/install` and then the tests with exactly the package
+  versions of the default manifests, on Julia 1.12 and 1.13.
 
 ### Changed
 - Supported Julia versions are now 1.12 and 1.13; Julia 1.11 is no longer
   supported. CI tests on 1.12 and 1.13.
+- `bin/install` follows the repository scripts guideline of KiteUtils.jl: it
+  checks the Julia version, updates the registry, copies the default manifest
+  and `.JETLSConfig.toml.default`, and precompiles the package and the examples.
+  `bin/install -i` offers an interactive installation for end users, and `-y`
+  never prompts.
+- `bin/run_julia` loads Revise only if it is available, then MakieControlPlots;
+  a script name as first argument is run in the REPL, and a system image is used
+  if one is provided.
+- `bin/install`, `bin/run_julia` and `bin/update_default_manifests` print a help
+  text with `-h` or `--help`.
 
 ### Fixed
 - `bode_plot` with `ref_lines=true`: a phase that crossed -180° exactly at a

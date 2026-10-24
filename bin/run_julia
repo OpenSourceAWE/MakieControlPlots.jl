@@ -1,3 +1,70 @@
-#!/usr/bin/env bash
+#!/bin/bash -eu
+# SPDX-FileCopyrightText: 2026 Uwe Fechner
+# SPDX-License-Identifier: MIT
 
-julia --project -i -e 'using Revise; function menu(); include("examples/menu.jl"); end' "$@"
+print_usage() {
+    cat <<'EOF'
+Usage: bin/run_julia [-h|--help] [julia options] [script.jl [script args...]]
+
+Start an interactive Julia REPL for MakieControlPlots, usually via the alias `jl`.
+
+The script
+  - sets JULIA_PKG_SERVER_REGISTRY_PREFERENCE=eager
+  - starts Julia with --project, using the project in the repository root
+  - uses the system image bin/MakieControlPlots-image-<julia version>.so if it exists
+    (there is no script to create one; it is only used if you provide it)
+  - loads Revise, if it is available (e.g. in the global environment), and then
+    MakieControlPlots
+  - defines the function menu() to run the examples in examples/menu.jl, which
+    activates the examples environment
+
+MakieControlPlots does not need multi-threading or multi-processing, so no -t or -p
+options are added by default; you can pass them yourself.
+
+All arguments are passed to Julia. If the first argument that is not an option ends
+with .jl, that file is included after MakieControlPlots is loaded, the remaining
+arguments are available in ARGS, and the REPL stays open afterwards.
+
+Examples:
+  bin/run_julia
+  bin/run_julia -t 4
+  bin/run_julia my_script.jl arg1 arg2
+  bin/run_julia -e 'println("ok")'
+EOF
+}
+
+case "${1:-}" in
+    -h|--help)
+        print_usage
+        exit 0
+        ;;
+esac
+
+if [[ $(basename "$(pwd)") == "bin" ]]; then
+    cd ..
+fi
+
+export JULIA_PKG_SERVER_REGISTRY_PREFERENCE=eager
+
+julia_major=$(julia --startup-file=no -e 'print(VERSION.major, ".", VERSION.minor)')
+SOFILE="bin/MakieControlPlots-image-${julia_major}.so"
+
+julia_init='if Base.find_package("Revise") !== nothing
+    using Revise
+end
+using MakieControlPlots
+function menu()
+    include("examples/menu.jl")
+end
+if !isempty(ARGS) && endswith(ARGS[1], ".jl")
+    include(popfirst!(ARGS))
+end'
+
+JULIA_ARGS=(--project)
+if [[ -f "$SOFILE" ]]; then
+    echo "Found system image $SOFILE"
+    JULIA_ARGS+=(-J "$SOFILE")
+fi
+JULIA_ARGS+=(-i -e "$julia_init")
+
+julia "${JULIA_ARGS[@]}" "$@"

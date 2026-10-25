@@ -28,6 +28,9 @@
 - `bode_plot` with `ref_lines=true`: a phase that crossed -180° exactly at a
   frequency grid point was counted twice, so the gain margin line and label
   were drawn twice.
+- `savefig()` in a new session, before any plot was displayed, exported a plot
+  of the precompile workload instead of failing with "no plot to save".
+- `docs/basic.png` now shows the plot of the basic example in the README.
 
 ## v0.1.21 11-10-2026
 

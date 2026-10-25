@@ -101,5 +101,12 @@ using PrecompileTools: @compile_workload, @setup_workload
         end
         sleep(0.05)
         close("all")
+        # Forget the workload's plots, otherwise they end up in the package image
+        # and savefig() in a new session exports one of them
+        _LAST_BUILDER[] = nothing
+        _LAST_FIGSIZE[] = nothing
+        _LAST_AXES[] = nothing
+        _LAST_FIG[] = nothing
+        _LAST_SCREEN[] = nothing
     end
 end

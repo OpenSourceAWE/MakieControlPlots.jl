@@ -10,6 +10,12 @@ X = collect(0.0:0.1:1.0)
 Y = X .^ 2
 
 @testset "MakieControlPlots" begin
+    @testset "no plot of the precompile workload is left over" begin
+        # In a new process, because this process may have displayed plots already
+        code = "using MakieControlPlots; exit(MakieControlPlots._LAST_BUILDER[] === nothing ? 0 : 1)"
+        @test success(`$(Base.julia_cmd()) --project=$(Base.active_project()) -e $code`)
+    end
+
     @testset "plot(X, Y)" begin
         p = plot(X, Y; xlabel="x", ylabel="y")
         @test p isa PlotX

@@ -1,13 +1,19 @@
 # CHANGELOG
 
-## Unreleased
+## v0.1.23 13-11-2026
 
 ### Added
 - `plot` and `plotx` accept vectors of `Union{Float64, Nothing}`; `nothing` is
   replaced by `NaN` and drawn as a gap. New example `gaps.jl`.
 - `plot` and `plotx` accept a vector of `DateTime` (or `Date`) as X. The x axis
   is labelled with clock times, `xlims` may be given as times, and the cursor
-  readout and copied values show the time. New example `time_axis.jl`.
+  readout and copied values show the time. New examples `time_axis.jl` and
+  `plot_wind.jl` (one month of low-pass filtered wind speed).
+
+### Fixed
+- `savefig()` in a new session, before any plot was displayed, exported a plot
+  of the precompile workload instead of failing with "no plot to save".
+- `docs/basic.png` now shows the plot of the basic example in the README.
 
 ## v0.1.22 25-10-2026
 
@@ -37,9 +43,6 @@
 - `bode_plot` with `ref_lines=true`: a phase that crossed -180° exactly at a
   frequency grid point was counted twice, so the gain margin line and label
   were drawn twice.
-- `savefig()` in a new session, before any plot was displayed, exported a plot
-  of the precompile workload instead of failing with "no plot to save".
-- `docs/basic.png` now shows the plot of the basic example in the README.
 
 ## v0.1.21 11-10-2026
 

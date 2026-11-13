@@ -24,6 +24,8 @@ This package provides the following features:
 - plots can be saved in PNG or PDF format from the GUI
 - an oscilloscope-like plot with multiple channels can be created
   with the `plotx()` function
+- `plot()` and `plotx()` accept `DateTime` values for the x axis and `nothing`
+  values (shown as gaps) in the data
 - an XY plot can be created with the `plotxy()` function
 - the `plot2d` function can create fast animations of particle systems,
   connected with segments
@@ -241,6 +243,54 @@ plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
       xscale=:identity, grid=true, xticks=nothing, rowgap=18,
       linestyle=nothing, color=nothing, yerr=nothing)
 ```
+
+### Gaps in the data
+
+`plot` and `plotx` accept vectors whose elements are a number or `nothing`,
+e.g. `Vector{Union{Float64, Nothing}}`, also as curves of a multi-curve
+channel. Every `nothing` is replaced by `NaN` and shown as a gap in the line:
+
+```julia
+using MakieControlPlots
+
+T = 0:0.1:2pi
+X = Union{Float64, Nothing}[sin(t) for t in T]
+Y = Union{Float64, Nothing}[cos(t) for t in T]
+X[15:20] .= nothing
+Y[40:45] .= nothing
+p = plotx(T, X, Y; ylabels=["sin", "cos"], fig="gaps",
+          title="Two channels with gaps")
+```
+
+### Time axis
+
+`plot` and `plotx` accept a vector of `DateTime` (or `Date`) as `X`. The x axis
+is then labelled with clock times or dates, depending on the visible range, and
+the ticks fall on round times, also after zooming. `xlims` can be given as
+`DateTime`s, and the cursor readout and the values copied in the value mode show
+the time. With a time axis the default `xlabel` of `plotx` is `"time"` instead
+of `"time [s]"`.
+
+```julia
+using Dates, MakieControlPlots, Random
+
+# Low-pass filtered random wind speed for October 2026, one sample per hour
+Random.seed!(42)
+T = DateTime(2026, 10, 1):Hour(1):DateTime(2026, 11, 1)
+raw = 15 .* rand(length(T))
+alpha = 1 / (1 + 12.0)          # time constant of 12 hours
+v = similar(raw)
+v[1] = raw[1]
+for i in 2:length(raw)
+    v[i] = v[i-1] + alpha * (raw[i] - v[i-1])
+end
+v = 15 .* (v .- minimum(v)) ./ (maximum(v) - minimum(v))
+p = plot(collect(T), v; xlabel="date", ylabel="wind speed [m/s]",
+         title="Wind speed, October 2026", fig="wind")
+```
+
+Explicitly passed `xticks` are used as they are. `plotxy` does not support time
+axes.
 
 ### XY plot
 

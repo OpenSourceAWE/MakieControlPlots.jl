@@ -389,7 +389,7 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
                 primary = true
                 crosshair_x[] = x
                 crosshair_pt[] = Point2f(x, y)
-                cursor[] = @sprintf("x=%.4g  y=%.4g", x, y)
+                cursor[] = "x=" * _format_x(ax, x) * @sprintf("  y=%.4g", y)
             end
             value_mode[] || continue
             lims = ax.finallimits[]
@@ -400,7 +400,7 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
                     m.lbl[] = ""
                 else
                     m.pt[] = Point2f(x, yi)
-                    m.lbl[] = @sprintf("x=%.4g  y=%.4g", x, yi)
+                    m.lbl[] = "x=" * _format_x(ax, x) * @sprintf("  y=%.4g", yi)
                     off, align = _emptiest_side(x, yi, axis_lines[ax], lims)
                     m.off[] = off
                     m.align[] = align
@@ -447,19 +447,25 @@ function _add_controls!(fig::Figure, axes_list::AbstractVector,
         (value_mode[] && moved < 5) || return
         any(h -> h[], values(hovered)) || return
         pts = Point2f[]
+        pt_axes = Any[]
         for ax in axes_list
             hovered[ax][] || continue
             for m in line_markers[ax]
                 p = m.pt[]
-                isnan(p[1]) || push!(pts, p)
+                isnan(p[1]) || (push!(pts, p); push!(pt_axes, ax))
             end
         end
         if isempty(pts)
             p = crosshair_pt[]
             pts = Point2f[p]
+            i = something(findfirst(ax -> hovered[ax][], axes_list), 1)
+            pt_axes = Any[axes_list[i]]
         end
+        fmt_pt(ax, p) = haskey(_TIME_ORIGINS, ax) ?
+            "(\"" * _format_x(ax, p[1]) * "\", " * @sprintf("%.6g)", p[2]) :
+            @sprintf("(%.6g, %.6g)", p[1], p[2])
         coords = "[" *
-            join((@sprintf("(%.6g, %.6g)", p[1], p[2]) for p in pts), ", ") *
+            join((fmt_pt(ax, p) for (ax, p) in zip(pt_axes, pts)), ", ") *
             "]"
         _copy_clipboard(coords)
         flash_status!("copied $coords")

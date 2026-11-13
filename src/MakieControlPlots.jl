@@ -7,6 +7,7 @@ using Makie: RGBAf
 using GridLayoutBase
 import JLD2
 using Pkg
+using Dates
 using StaticArraysCore
 using LaTeXStrings
 import Base: close
@@ -273,6 +274,7 @@ function install_examples(add_packages::Bool=true; overwrite::Bool=true)
 end
 
 include("controls.jl")
+include("time_axis.jl")
 include("plot.jl")
 include("plotx.jl")
 include("plotxy.jl")

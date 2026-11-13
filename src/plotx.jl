@@ -220,11 +220,15 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                disp=false, new_screen=true, legendsize=16, titlesize=18,
                xscale::Symbol=:identity, grid=true, xticks=nothing, rowgap=18,
                linestyle=nothing, color=nothing, yerr=nothing)
+    X, Y = _nan(X), _nan(Y)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(collect(X), Y, labels, xlabel, ylabels, title, ylsize,
                          yzoom, xlims, ylims, ann, scatter, fig, 2, xlsize,
                          legend_position, legendsize, titlesize, xscale, grid, "", xticks, nothing, linestyle, rowgap, nothing, yerr)
+    X, xlims, t0 = _time_x(X, xlims)
+    # The default label names a unit that a clock-time axis does not have.
+    !isnothing(t0) && xlabel == "time [s]" && (xlabel = "time")
     if disp
         n = length(Y)
         base_row_h = round(Int, 2 * yzoom * 96)
@@ -265,6 +269,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                 if !isnothing(xticks)
                     ax.xticks = xticks
                 end
+                _time_axis!(ax, t0, xticks)
                 ax.xgridvisible = grid
                 ax.ygridvisible = grid
                 if !isnothing(ylbl)
@@ -290,6 +295,7 @@ function plotx(X, Y...; xlabel="time [s]", ylabels=nothing, labels=nothing,
                     if !isnothing(xticks)
                         ax2.xticks = xticks
                     end
+                    _time_axis!(ax2, t0, xticks)
                     hidespines!(ax2)
                     hidexdecorations!(ax2)
                     # The left axis draws the panel's grid: a second set of

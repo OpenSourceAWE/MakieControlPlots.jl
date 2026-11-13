@@ -1,3 +1,39 @@
+# Data with gaps may arrive as vectors whose element type is a union of a number
+# type and `Nothing` (e.g. `Vector{Union{Float64, Nothing}}`). Such vectors are
+# converted to `Vector{Float64}` with `nothing` replaced by `NaN`, which Makie
+# draws as a gap in the line. Nested vectors and tuples of curves are converted
+# recursively; anything that contains no `nothing` is returned unchanged.
+_needs_nan(::AbstractVector{<:Number}) = false
+_needs_nan(::AbstractVector{<:Union{Number, Nothing}}) = true
+_needs_nan(v::AbstractVector{<:Union{AbstractVector, Tuple}}) = any(_needs_nan, v)
+_needs_nan(t::Tuple) = any(_needs_nan, t)
+_needs_nan(_) = false
+
+_nan(v::AbstractVector{<:Number}) = v
+_nan(v::AbstractVector{<:Union{Number, Nothing}}) = Float64[something(x, NaN) for x in v]
+_nan(v::AbstractVector{<:Union{AbstractVector, Tuple}}) =
+    _needs_nan(v) ? map(_nan, v) : v
+_nan(t::Tuple) = _needs_nan(t) ? map(_nan, t) : t
+_nan(x) = x
+
+# Fallbacks for vectors containing `nothing`; they convert and re-dispatch to
+# the methods below, which are all more specific.
+function plot(Y::AbstractVector; kwargs...)
+    _needs_nan(Y) || throw(MethodError(plot, (Y,)))
+    return plot(_nan(Y); kwargs...)
+end
+
+function plot(X, Y::AbstractVector; kwargs...)
+    _needs_nan(Y) || throw(MethodError(plot, (X, Y)))
+    return plot(_nan(X), _nan(Y); kwargs...)
+end
+
+function plot(X, Y1::AbstractVector, Y2::AbstractVector; kwargs...)
+    (_needs_nan(Y1) || _needs_nan(Y2)) ||
+        throw(MethodError(plot, (X, Y1, Y2)))
+    return plot(_nan(X), _nan(Y1), _nan(Y2); kwargs...)
+end
+
 function plot(Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
               fig="", ysize=nothing, xsize=nothing, labelsize=16,
               output_folder="output", disp=false, new_screen=true,
@@ -44,6 +80,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Y, nothing, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 1, xlsize, :auto, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, nothing, nothing)
+    X, xlims, t0 = _time_x(X, xlims)
     if disp
         builder = function(layout)
             ax = Axis(layout[1, 1]; xlabel=string(xlabel),
@@ -58,6 +95,7 @@ function plot(X, Y::AbstractVector{<:Number}; xlabel="", ylabel="", title="",
             if !isnothing(xticks)
                 ax.xticks = xticks
             end
+            _time_axis!(ax, t0, xticks)
             ax.xgridvisible = grid
             ax.ygridvisible = grid
             lines!(ax, X, Y; linewidth=LINE_WIDTH, label=isempty(label) ? nothing : label)
@@ -88,11 +126,13 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
               legend_position=:auto, output_folder="output", disp=false,
               new_screen=true, legendsize=16, titlesize=18, xscale::Symbol=:identity, grid=true, label="",
               xticks=nothing)
+    X, Ys = _nan(X), _nan(Ys)
     ylsize = isnothing(ysize) ? labelsize : ysize
     xlsize = isnothing(xsize) ? labelsize : xsize
     plotx_struct = PlotX(X, Ys, labels, xlabel, ylabel, title, ylsize, nothing,
                          xlims, ylims, ann, scatter, fig, 4, xlsize,
                          legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, nothing, nothing)
+    X, xlims, t0 = _time_x(X, xlims)
     if disp
         xscale_sym = xscale::Symbol
         builder = function(layout)
@@ -108,6 +148,7 @@ function plot(X, Ys::AbstractVector{<:Union{AbstractVector, Tuple}};
             if !isnothing(xticks)
                 ax.xticks = xticks
             end
+            _time_axis!(ax, t0, xticks)
             ax.xgridvisible = grid
             ax.ygridvisible = grid
             any_label = false
@@ -175,6 +216,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
                          legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, yticks, nothing)
+    X, xlims, t0 = _time_x(X, xlims)
     if disp
         xscale_sym = xscale::Symbol
         leg_labels = labels == ["", ""] ? string.(ylabels) : string.(labels)
@@ -195,6 +237,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             if !isnothing(xticks)
                 ax1.xticks = xticks
             end
+            _time_axis!(ax1, t0, xticks)
             yticks1 = yticks isa Tuple ? yticks[1] : yticks
             if !isnothing(yticks1)
                 ax1.yticks = yticks1 isa Real ? _step_yticks(Y1, yticks1) : yticks1
@@ -212,6 +255,7 @@ function plot(X, Y1::AbstractVector{<:Number}, Y2::AbstractVector{<:Number};
             if !isnothing(xticks)
                 ax2.xticks = xticks
             end
+            _time_axis!(ax2, t0, xticks)
             yticks2 = yticks isa Tuple ? yticks[2] : yticks
             if !isnothing(yticks2)
                 ax2.yticks = yticks2 isa Real ? _step_yticks(Y2, yticks2) : yticks2
@@ -252,6 +296,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
               legend_position=:auto, output_folder="output", disp=false,
               new_screen=true, legendsize=16, titlesize=18, xscale::Symbol=:identity, grid=true, label="",
               xticks=nothing, yticks=nothing)
+    X, Y1 = _nan(X), _nan(Y1)
     if length(Y1) == 1
         return plot(X, Y1[1], Y2; xlabel, ylabels, title, labels, xlims,
                     ylims, ann, scatter, fig, ysize, xsize, labelsize,
@@ -263,6 +308,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
     plotx_struct = PlotX(X, [Y1, Y2], labels, xlabel, ylabels, title, ylsize,
                          nothing, xlims, ylims, ann, scatter, fig, 5, xlsize,
                          legend_position, legendsize, titlesize, xscale, grid, label, xticks, nothing, nothing, nothing, yticks, nothing)
+    X, xlims, t0 = _time_x(X, xlims)
     if disp
         xscale_sym = xscale::Symbol
         corner = _resolve_corner(legend_position, X,
@@ -283,6 +329,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             if !isnothing(xticks)
                 ax1.xticks = xticks
             end
+            _time_axis!(ax1, t0, xticks)
             yticks1 = yticks isa Tuple ? yticks[1] : yticks
             if !isnothing(yticks1)
                 ax1.yticks = yticks1 isa Real ? _step_yticks(Y1, yticks1) : yticks1
@@ -297,6 +344,7 @@ function plot(X, Y1::AbstractVector{<:AbstractVector},
             if !isnothing(xticks)
                 ax2.xticks = xticks
             end
+            _time_axis!(ax2, t0, xticks)
             yticks2 = yticks isa Tuple ? yticks[2] : yticks
             if !isnothing(yticks2)
                 ax2.yticks = yticks2 isa Real ? _step_yticks(Y2, yticks2) : yticks2
